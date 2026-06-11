@@ -84,7 +84,7 @@ const loginUser = async (req, res) => {
       otpRequired: true,
     });
   } catch (error) {
-    console.error("Erreur loginUser :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur loginUser ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la connexion.",
     });
@@ -184,7 +184,7 @@ const verifyOTP = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("Erreur verifyOTP :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur verifyOTP ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la vérification OTP.",
     });
@@ -220,7 +220,7 @@ const logoutUser = async (req, res) => {
       message: "Déconnexion réussie. Session invalidée.",
     });
   } catch (error) {
-    console.error("Erreur logoutUser :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur logoutUser ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la déconnexion.",
     });
@@ -312,7 +312,7 @@ Plateforme Smart Campus`,
       },
     });
   } catch (error) {
-    console.error("Erreur createUserByAdmin :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur createUserByAdmin ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la création de l'utilisateur.",
     });
@@ -332,7 +332,7 @@ const getUsers = async (req, res) => {
       users,
     });
   } catch (error) {
-    console.error("Erreur getUsers :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur getUsers ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la récupération des utilisateurs.",
     });
@@ -387,7 +387,7 @@ const updateUserStatus = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Erreur updateUserStatus :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur updateUserStatus ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la mise à jour du statut.",
     });
@@ -444,7 +444,7 @@ const updateUserRole = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Erreur updateUserRole :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur updateUserRole ", error);
     return res.status(500).json({ message: "Erreur serveur lors de la mise à jour du rôle." });
   }
 };
@@ -475,7 +475,7 @@ const deleteUser = async (req, res) => {
 
     return res.status(200).json({ message: "Utilisateur supprimé avec succès." });
   } catch (error) {
-    console.error("Erreur deleteUser :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur deleteUser ", error);
     return res.status(500).json({ message: "Erreur serveur lors de la suppression." });
   }
 };
@@ -536,7 +536,7 @@ const changePassword = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Erreur changePassword :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur changePassword ", error);
     return res.status(500).json({
       message: "Erreur serveur lors du changement de mot de passe.",
     });

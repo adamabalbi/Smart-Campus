@@ -8,9 +8,10 @@ const {
   getAccessLogs,
 } = require("../controllers/accessController");
 const { protect, authorizeRoles } = require("../middleware/authMiddleware");
+const { validateAccess } = require("../middleware/validationMiddleware");
 
 // Vérification d'accès (agent de sécurité — via scan NFC)
-router.post("/check", checkAccess);
+router.post("/check", validateAccess, checkAccess);
 
 // Liste des espaces (public : page agent + admin)
 router.get("/spaces", getSpaces);

@@ -133,6 +133,23 @@ cardSchema.methods.resetPinAttempts = function() {
   this.lastPinValidation = new Date();
 };
 
+// Méthode pour vérifier si la validation PIN est encore valide (10 minutes)
+cardSchema.methods.isPinValidationExpired = function(timeoutMinutes = 10) {
+  if (!this.pinValidated || !this.lastPinValidation) {
+    return true; // Pas de validation ou pas de timestamp
+  }
+
+  const timeoutMs = timeoutMinutes * 60 * 1000;
+  const expirationTime = new Date(this.lastPinValidation.getTime() + timeoutMs);
+  return new Date() > expirationTime;
+};
+
+// Méthode pour réinitialiser la validation PIN après transaction
+cardSchema.methods.resetPinValidation = function() {
+  this.pinValidated = false;
+  this.lastPinValidation = null;
+};
+
 cardSchema.methods.incrementPinAttempts = function() {
   this.pinAttempts += 1;
   this.nfcFailures += 1;

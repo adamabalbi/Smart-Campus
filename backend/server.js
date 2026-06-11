@@ -1,6 +1,8 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const rateLimit = require("express-rate-limit");
+const helmet = require("helmet");
 const http = require("http");
 const WebSocket = require("ws");
 const connectDB = require("./config/db");
@@ -29,7 +31,30 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+
+// Headers de sécurité
+app.use(helmet());
+
+// Rate limiting pour l'authentification (protection contre force brute)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Max 5 tentatives par IP
+  message: { message: "Trop de tentatives de connexion. Réessayez dans 15 minutes." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiting général pour l'API
+const apiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 100, // Max 100 requêtes par minute par IP
+  message: { message: "Trop de requêtes. Réessayez dans une minute." }
+});
+
+app.use('/api', apiLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/registration/verify-email', authLimiter);
 
 app.get("/", (req, res) => {
   res.send("API Smart Campus fonctionne correctement");

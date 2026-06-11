@@ -26,7 +26,7 @@ const getWallet = async (req, res) => {
       wallet,
     });
   } catch (error) {
-    console.error("Erreur getWallet :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur getWallet ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la récupération du portefeuille.",
     });
@@ -70,7 +70,7 @@ const getWalletByCardUID = async (req, res) => {
       card,
     });
   } catch (error) {
-    console.error("Erreur getWalletByCardUID :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur getWalletByCardUID ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la récupération du portefeuille.",
     });
@@ -210,7 +210,7 @@ const rechargeByAgent = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Erreur rechargeByAgent :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur rechargeByAgent ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la recharge.",
     });
@@ -299,7 +299,7 @@ const rechargeByKiosk = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Erreur rechargeByKiosk :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur rechargeByKiosk ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la recharge.",
     });
@@ -334,7 +334,7 @@ const getTransactionHistory = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Erreur getTransactionHistory :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur getTransactionHistory ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la récupération de l'historique.",
     });
@@ -416,7 +416,7 @@ const getAgentHistory = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Erreur getAgentHistory :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur getAgentHistory ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la récupération de l'historique.",
     });
@@ -456,7 +456,7 @@ const diagnosticWallets = async (req, res) => {
       data: diagnosticData
     });
   } catch (error) {
-    console.error("Erreur diagnosticWallets :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur diagnosticWallets ", error);
     return res.status(500).json({
       message: "Erreur serveur lors du diagnostic.",
     });
@@ -500,7 +500,7 @@ const createMissingWallets = async (req, res) => {
       totalCards: cards.length
     });
   } catch (error) {
-    console.error("Erreur createMissingWallets :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur createMissingWallets ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la création des portefeuilles.",
     });
@@ -539,7 +539,7 @@ const createWallet = async (req, res) => {
       wallet,
     });
   } catch (error) {
-    console.error("Erreur createWallet :", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur createWallet ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la création du portefeuille.",
     });

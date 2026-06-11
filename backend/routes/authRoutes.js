@@ -18,6 +18,12 @@ const {
   authorizeRoles,
 } = require("../middleware/authMiddleware");
 
+const {
+  validateLogin,
+  validateOTP,
+  validateUserCreation
+} = require("../middleware/validationMiddleware");
+
 router.get("/test", (req, res) => {
   res.json({
     message: "Route authentification fonctionnelle",
@@ -25,8 +31,8 @@ router.get("/test", (req, res) => {
 });
 
 // Connexion avec OTP
-router.post("/login", loginUser);
-router.post("/verify-otp", verifyOTP);
+router.post("/login", validateLogin, loginUser);
+router.post("/verify-otp", validateOTP, verifyOTP);
 router.post("/logout", protect, logoutUser);
 router.patch("/change-password", protect, changePassword);
 
@@ -50,6 +56,7 @@ router.post(
   "/users",
   protect,
   authorizeRoles("super_admin", "admin"),
+  validateUserCreation,
   createUserByAdmin
 );
 

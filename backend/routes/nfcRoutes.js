@@ -10,6 +10,7 @@ const {
 } = require("../controllers/nfcController");
 
 const { protect, authorizeRoles } = require("../middleware/authMiddleware");
+const { validatePayment, validateRecharge } = require("../middleware/validationMiddleware");
 
 // ---- Routes publiques pour kiosques ----
 
@@ -28,10 +29,10 @@ router.post("/auth", authenticateByCard);
 router.post("/validate-pin", validatePinWithCard);
 
 // Recharge via NFC (kiosque autonome)
-router.post("/recharge", rechargeByNFC);
+router.post("/recharge", validateRecharge, rechargeByNFC);
 
 // Paiement d'un service interne via NFC (cantine, bibliothèque, imprimerie)
-router.post("/pay", payByNFC);
+router.post("/pay", validatePayment, payByNFC);
 
 // ---- Routes protégées pour administration ----
 

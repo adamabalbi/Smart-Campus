@@ -141,7 +141,7 @@ const checkAccess = async (req, res) => {
     // ✅ Accès autorisé
     return respond("authorized", "ok", baseExtra);
   } catch (error) {
-    console.error("Erreur checkAccess:", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur checkAccess", error);
     return res.status(500).json({ message: "Erreur serveur lors de la vérification d'accès." });
   }
 };
@@ -205,7 +205,7 @@ const updateSpaceRules = async (req, res) => {
 
     return res.json({ message: `Règles de ${space.label} mises à jour.`, space });
   } catch (error) {
-    console.error("Erreur updateSpaceRules:", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur updateSpaceRules", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };
@@ -244,7 +244,7 @@ const getAccessLogs = async (req, res) => {
       pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {
-    console.error("Erreur getAccessLogs:", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur getAccessLogs", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };

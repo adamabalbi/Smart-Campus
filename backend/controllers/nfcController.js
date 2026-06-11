@@ -90,7 +90,7 @@ const authenticateByCard = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Erreur authentification NFC:", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur authentification NFC", error);
     await logNFCEvent(req.body.uid, 'auth', false, error.message, req.body.readerId);
     res.status(500).json({
       message: "Erreur serveur lors de l'authentification NFC"
@@ -147,10 +147,9 @@ const validatePinWithCard = async (req, res) => {
       });
     }
 
-    // PIN correct
-    card.pinValidated = true;
+    // PIN correct - utiliser la méthode sécurisée
+    card.resetPinAttempts(); // Cette méthode définit pinValidated=true et lastPinValidation
     card.nfcFailures = 0;
-    card.lastPinValidation = new Date();
     await card.save();
 
     await logNFCEvent(uid, 'pin_validation', true, null, readerId);
@@ -162,7 +161,7 @@ const validatePinWithCard = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Erreur validation PIN NFC:", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur validation PIN NFC", error);
     await logNFCEvent(req.body.uid, 'pin_validation', false, error.message, req.body.readerId);
     res.status(500).json({
       message: "Erreur serveur lors de la validation PIN"
@@ -206,11 +205,11 @@ const rechargeByNFC = async (req, res) => {
       });
     }
 
-    // Vérification du PIN si requis
-    if (!card.pinValidated) {
-      await logNFCEvent(uid, 'recharge', false, 'PIN not validated', readerId);
+    // Vérification du PIN si requis (avec expiration sécurisée)
+    if (!card.pinValidated || card.isPinValidationExpired()) {
+      await logNFCEvent(uid, 'recharge', false, 'PIN not validated or expired', readerId);
       return res.status(403).json({
-        message: "PIN non validé. Validez d'abord votre PIN."
+        message: "PIN non validé ou expiré. Validez d'abord votre PIN."
       });
     }
 
@@ -247,6 +246,10 @@ const rechargeByNFC = async (req, res) => {
     wallet.balance = newBalance;
     wallet.lastRecharge = new Date();
     await wallet.save();
+
+    // SÉCURITÉ : Réinitialiser la validation PIN après la transaction
+    card.resetPinValidation();
+    await card.save();
 
     // Génération d'un numéro de reçu unique (traçabilité)
     const receiptNumber = "REC-" + new Date().getFullYear() + "-" +
@@ -315,7 +318,7 @@ const rechargeByNFC = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Erreur recharge NFC:", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur recharge NFC", error);
     await logNFCEvent(req.body.uid, 'recharge', false, error.message, req.body.readerId);
     res.status(500).json({
       message: "Erreur serveur lors de la recharge NFC"
@@ -344,7 +347,7 @@ const getReadersStatus = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Erreur statut lecteurs:", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur statut lecteurs", error);
     res.status(500).json({
       message: "Erreur serveur lors de la récupération du statut"
     });
@@ -365,7 +368,7 @@ const logNFCEvent = async (uid, action, success, errorMessage = null, readerId =
       metadata: metadata
     });
   } catch (error) {
-    console.error("Erreur log NFC:", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur log NFC", error);
   }
 };
 
@@ -570,7 +573,7 @@ const payByNFC = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Erreur paiement NFC:", error);
+    const { logError } = require("../utils/secureLogger"); logError("Erreur paiement NFC", error);
     await logNFCEvent(req.body.uid, 'payment', false, error.message, req.body.readerId);
     res.status(500).json({ message: "Erreur serveur lors du paiement." });
   }

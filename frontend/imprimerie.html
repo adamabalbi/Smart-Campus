@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Imprimerie — Smart Campus</title>
+  <link rel="stylesheet" href="service-payment.css">
+</head>
+<body>
+  <div class="svc-container">
+    <h1 class="svc-title" id="pageTitle">🖨️ Imprimerie</h1>
+    <p class="svc-subtitle">Paiement des impressions, photocopies et scans</p>
+
+    <!-- Étape 1 : Scan -->
+    <div id="step-scan" class="svc-step">
+      <div class="svc-card" style="text-align:center;">
+        <div style="font-size:4rem;">💳</div>
+        <h2 style="margin:1rem 0;">Présentez la carte de l'étudiant</h2>
+        <button class="btn" id="scanBtn">📡 Scanner la carte</button>
+        <div class="status-box" id="scanStatus" style="margin-top:1rem;">Cliquez sur Scanner et posez la carte.</div>
+      </div>
+    </div>
+
+    <!-- Étape 2 : Paiement -->
+    <div id="step-pay" class="svc-step hidden">
+      <div class="svc-card">
+        <h3 style="margin-bottom:0.75rem;">👤 Étudiant</h3>
+        <div class="svc-info-row"><span>UID carte</span><strong id="stUID">—</strong></div>
+        <div class="svc-info-row"><span>Nom</span><strong id="stName">—</strong></div>
+        <div class="svc-info-row"><span>Matricule</span><strong id="stMatricule">—</strong></div>
+        <div class="svc-info-row"><span>Solde actuel</span><strong id="stBalance">—</strong></div>
+      </div>
+
+      <div class="svc-card">
+        <h3 style="margin-bottom:0.75rem;">🖨️ Type de service</h3>
+        <div id="serviceList"></div>
+
+        <div id="qtyRow" class="hidden" style="margin-top:1rem;">
+          <label class="field-label" id="qtyLabel">Nombre de pages</label>
+          <input type="number" id="qtyInput" class="input" min="1" placeholder="0">
+        </div>
+
+        <div class="amount-big">Montant : <span id="amountDisplay" data-value="">—</span></div>
+
+        <label class="field-label">Code PIN de l'étudiant</label>
+        <input type="password" id="pinInput" class="input" maxlength="6" inputmode="numeric" placeholder="••••">
+
+        <div class="svc-msg" id="payMsg"></div>
+
+        <div style="display:flex; gap:0.6rem; margin-top:0.6rem;">
+          <button class="btn" id="resetBtn" style="flex:1;">Annuler</button>
+          <button class="btn btn-primary" id="payBtn" style="flex:2;">Payer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Étape 3 : Reçu -->
+    <div id="step-receipt" class="svc-step hidden">
+      <div class="success-icon">✅</div>
+      <h2 style="text-align:center;">Paiement effectué</h2>
+      <div class="receipt-box" id="receiptBox">
+        <div class="rc-head">
+          <div style="font-size:1.2rem; font-weight:700;">🏫 Smart Campus</div>
+          <div style="font-size:0.85rem; color:#666;">Reçu de paiement</div>
+        </div>
+        <div class="rc-row"><span>N° reçu</span><strong id="rcNumber">—</strong></div>
+        <div class="rc-row"><span>Date</span><strong id="rcDate">—</strong></div>
+        <div class="rc-row"><span>Service</span><strong id="rcService">—</strong></div>
+        <div class="rc-row"><span>Détail</span><strong id="rcDetail">—</strong></div>
+        <div class="rc-row"><span>Étudiant</span><strong id="rcStudent">—</strong></div>
+        <div class="rc-row"><span>Matricule</span><strong id="rcMatricule">—</strong></div>
+        <div class="rc-total">
+          <div class="rc-row"><span>Montant payé</span><strong id="rcAmount" style="color:#dc2626;">—</strong></div>
+          <div class="rc-row"><span>Solde avant</span><span id="rcBefore">—</span></div>
+          <div class="rc-row"><span>Solde après</span><strong id="rcAfter">—</strong></div>
+        </div>
+      </div>
+      <div style="text-align:center; margin-top:1rem;">
+        <button class="btn" onclick="printReceipt()">🖨️ Imprimer</button>
+        <button class="btn btn-primary" onclick="reset()">Nouveau paiement</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.SERVICE_CONFIG = {
+      service: 'imprimerie',
+      title: '🖨️ Imprimerie',
+      mode: 'unit',
+      qtyLabel: 'Nombre de pages',
+      unitSuffix: 'page',
+      items: [
+        { label: 'Impression noir et blanc', unit: 25 },
+        { label: 'Impression couleur', unit: 100 },
+        { label: 'Photocopie', unit: 25 },
+        { label: 'Scan', unit: 50 }
+      ]
+    };
+  </script>
+  <script src="service-payment.js"></script>
+</body>
+</html>

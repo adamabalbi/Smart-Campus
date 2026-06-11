@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Campus — Service de Scolarité</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      Smart Campus
+      <small>Service de Scolarité</small>
+    </div>
+    <div class="sidebar-user">
+      <strong id="sbName">—</strong>
+      <span id="sbRole">Service de Scolarité</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-tab="applications">Demandes d'inscription</div>
+      <div class="nav-item" data-tab="students">Étudiants inscrits</div>
+      <div class="nav-item" data-tab="account">Mon compte</div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-ghost btn-full" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- ============================= DEMANDES D'INSCRIPTION ============================= -->
+    <section id="tab-applications" class="section active">
+      <div class="page-title">Demandes d'inscription</div>
+
+      <div class="reg-filters">
+        <button class="sc-filter active" data-status="pending">En attente</button>
+        <button class="sc-filter" data-status="">Toutes</button>
+        <button class="sc-filter" data-status="approved">Validées</button>
+        <button class="sc-filter" data-status="rejected">Refusées</button>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <div id="applicationsTable"><div class="state-msg">Chargement...</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= ÉTUDIANTS INSCRITS ============================= -->
+    <section id="tab-students" class="section">
+      <div class="page-title">Étudiants inscrits</div>
+
+      <div class="reg-filters">
+        <button class="ss-filter active" data-status="">Tous</button>
+        <button class="ss-filter" data-status="en_attente">En attente</button>
+        <button class="ss-filter" data-status="en_regle">En règle</button>
+        <button class="ss-filter" data-status="non_en_regle">Non en règle</button>
+        <button class="ss-filter" data-status="paiement_partiel">Paiement partiel</button>
+        <button class="ss-filter" data-status="exonere">Exonéré</button>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <div id="studentsTable"><div class="state-msg">Chargement...</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= MON COMPTE ============================= -->
+    <section id="tab-account" class="section">
+      <div class="page-title">Mon compte</div>
+
+      <div class="card">
+        <h3>Informations personnelles</h3>
+        <div class="details-grid" style="margin-bottom: 2rem;">
+          <div class="detail-row">
+            <span>Nom complet</span>
+            <strong id="accountName">—</strong>
+          </div>
+          <div class="detail-row">
+            <span>Email</span>
+            <strong id="accountEmail">—</strong>
+          </div>
+          <div class="detail-row">
+            <span>Rôle</span>
+            <strong>Service de Scolarité</strong>
+          </div>
+        </div>
+
+        <h3>Sécurité</h3>
+        <div id="changePasswordForm">
+          <div class="field">
+            <label for="currentPassword">Mot de passe actuel</label>
+            <input type="password" id="currentPassword" required>
+          </div>
+          <div class="field">
+            <label for="newPassword">Nouveau mot de passe</label>
+            <input type="password" id="newPassword" required>
+          </div>
+          <div class="field">
+            <label for="confirmPassword">Confirmer le nouveau mot de passe</label>
+            <input type="password" id="confirmPassword" required>
+          </div>
+          <div id="passwordMsg"></div>
+          <button id="changePasswordBtn" type="button">Changer le mot de passe</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MODAL : Voir détail demande -->
+<div id="detailModal" class="modal-backdrop hidden">
+  <div class="modal" style="max-width:500px">
+    <h3>Détail de la demande</h3>
+    <div id="detailContent" class="details-grid"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="detailClose">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL : Modifier statut scolarité -->
+<div id="statutModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h3>Modifier le statut de scolarité</h3>
+    <p id="statutModalInfo" style="font-size:13px;color:var(--muted);margin-bottom:1rem"></p>
+    <div class="field">
+      <label>Statut de scolarité</label>
+      <select id="statutSelect">
+        <option value="en_attente">En attente</option>
+        <option value="en_regle">En règle</option>
+        <option value="non_en_regle">Non en règle</option>
+        <option value="paiement_partiel">Paiement partiel</option>
+        <option value="exonere">Exonéré</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Commentaire</label>
+      <input type="text" id="statutComment" placeholder="ex: Paiement confirmé par reçu n°…">
+    </div>
+    <div id="statutMsg"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="statutCancel">Annuler</button>
+      <button id="statutConfirm">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL : Valider inscription -->
+<div id="validateModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h3>Valider l'inscription</h3>
+    <p id="validateInfo" style="font-size:13px;color:var(--muted);margin-bottom:.75rem"></p>
+    <p style="font-size:13px;background:var(--bg);padding:.6rem .75rem;border-radius:6px;margin-bottom:.75rem">
+      L'étudiant sera notifié par email. Une fois l'inscription validée, l'administration pourra lui associer une carte étudiant.
+    </p>
+    <div id="validateMsg"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="validateCancel">Annuler</button>
+      <button id="validateConfirm">Valider l'inscription</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL : Refuser inscription -->
+<div id="refuseModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h3>Refuser l'inscription</h3>
+    <div class="field">
+      <label>Motif du refus</label>
+      <input type="text" id="refuseReason" placeholder="ex: Dossier incomplet, scolarité non réglée">
+    </div>
+    <div id="refuseMsg"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="refuseCancel">Annuler</button>
+      <button id="refuseConfirm" style="background:var(--danger);color:white;border-color:var(--danger)">Refuser</button>
+    </div>
+  </div>
+</div>
+
+<script src="scolarite.js"></script>
+</body>
+</html>

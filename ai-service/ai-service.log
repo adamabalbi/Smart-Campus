@@ -1,0 +1,22 @@
+✅ Modèle chargé : /Users/balbina/Desktop/smart-campus-platform/ai-service/../smart_campus_random_forest_model.joblib
+🤖 Service IA démarré sur http://localhost:5001
+ * Serving Flask app 'app'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://192.168.1.77:5001
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [10/Jun/2026 22:38:00] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [10/Jun/2026 22:38:00] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [10/Jun/2026 22:38:00] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [10/Jun/2026 22:44:50] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [10/Jun/2026 22:47:58] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [10/Jun/2026 22:48:20] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [10/Jun/2026 22:48:31] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [10/Jun/2026 22:48:46] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [10/Jun/2026 22:49:00] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [10/Jun/2026 22:49:19] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [10/Jun/2026 22:49:38] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [10/Jun/2026 23:22:34] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [10/Jun/2026 23:28:45] "POST /predict HTTP/1.1" 200 -

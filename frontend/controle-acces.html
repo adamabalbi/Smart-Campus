@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contrôle d'accès — Smart Campus</title>
+  <link rel="stylesheet" href="service-payment.css">
+  <style>
+    .result-card { border-radius: 14px; padding: 2rem; text-align: center; margin: 1rem 0; }
+    .result-ok { background: rgba(22,163,74,0.25); border: 2px solid #16a34a; }
+    .result-ko { background: rgba(220,38,38,0.25); border: 2px solid #dc2626; }
+    .result-icon { font-size: 5rem; }
+    .result-decision { font-size: 1.8rem; font-weight: 700; margin: 0.5rem 0; }
+  </style>
+</head>
+<body>
+  <div class="svc-container">
+    <h1 class="svc-title">🔐 Contrôle d'accès</h1>
+    <p class="svc-subtitle">Vérification d'accès aux espaces du campus</p>
+
+    <div style="display:flex; gap:0.6rem; justify-content:center; margin-bottom:1.5rem;">
+      <button class="btn" id="navCheck">✅ Vérification</button>
+      <button class="btn" id="navHistory">📋 Historique</button>
+    </div>
+
+    <!-- Sélection de l'espace + scan -->
+    <div id="step-scan" class="svc-step">
+      <div class="svc-card">
+        <label class="field-label">Espace demandé</label>
+        <select id="spaceSelect" class="input" style="font-size:1.1rem;"></select>
+      </div>
+      <div class="svc-card" style="text-align:center;">
+        <div style="font-size:4rem;">💳</div>
+        <h2 style="margin:1rem 0;">Présentez la carte de l'étudiant</h2>
+        <button class="btn" id="scanBtn">📡 Scanner la carte</button>
+        <button class="btn btn-primary" id="checkBtn" style="display:none;">Vérifier accès</button>
+        <div class="status-box" id="scanStatus" style="margin-top:1rem;">Choisissez l'espace puis scannez la carte.</div>
+      </div>
+    </div>
+
+    <!-- Résultat -->
+    <div id="step-result" class="svc-step hidden">
+      <div id="resultCard" class="result-card">
+        <div class="result-icon" id="resultIcon">—</div>
+        <div class="result-decision" id="resultDecision">—</div>
+        <div id="resultReason" style="opacity:0.9;"></div>
+      </div>
+
+      <div class="svc-card" id="studentBlock">
+        <div class="svc-info-row"><span>Étudiant</span><strong id="rName">—</strong></div>
+        <div class="svc-info-row"><span>Matricule</span><strong id="rMatricule">—</strong></div>
+        <div class="svc-info-row"><span>Filière</span><strong id="rFiliere">—</strong></div>
+        <div class="svc-info-row"><span>Statut carte</span><strong id="rCard">—</strong></div>
+        <div class="svc-info-row"><span>Espace demandé</span><strong id="rSpace">—</strong></div>
+      </div>
+
+      <div style="text-align:center; margin-top:1rem;">
+        <button class="btn btn-primary" id="nextBtn">Nouvelle vérification</button>
+      </div>
+    </div>
+
+    <!-- Historique des accès -->
+    <div id="step-history" class="svc-step hidden">
+      <div class="svc-card">
+        <div style="display:flex; gap:0.6rem; margin-bottom:1rem; flex-wrap:wrap;">
+          <input type="date" id="histDate" class="input" style="flex:1; font-size:0.95rem; padding:0.6rem;">
+          <button class="btn" id="histRefresh">Actualiser</button>
+        </div>
+        <div id="historyTable" style="overflow-x:auto;">
+          <div style="text-align:center; opacity:0.8;">Chargement...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = "http://localhost:5000/api";
+    let scanSocket = null, scanActive = false, currentUID = null;
+
+    function $(id){ return document.getElementById(id); }
+    function setStatus(t,c){ const e=$("scanStatus"); e.textContent=t; e.style.color=c||"#666"; }
+    function showStep(id){ document.querySelectorAll(".svc-step").forEach(s=>s.classList.add("hidden")); $(id).classList.remove("hidden"); }
+
+    // Charger la liste des espaces
+    async function loadSpaces() {
+      try {
+        const res = await fetch(`${API}/access/spaces`);
+        const data = await res.json();
+        const active = (data.spaces||[]).filter(s => s.status === 'active');
+        $("spaceSelect").innerHTML = active.map(s => `<option value="${s.key}">${s.label}</option>`).join("");
+      } catch(e) { setStatus("🔴 Impossible de charger les espaces", "#ef4444"); }
+    }
+
+    // Scan de la carte
+    function scanCard() {
+      if (scanActive) { scanActive=false; if(scanSocket) scanSocket.close(); setStatus("Scan annulé.","#666"); return; }
+      setStatus("📡 Approchez la carte du lecteur...", "#2563eb");
+      scanActive = true;
+      scanSocket = new WebSocket("ws://localhost:5000");
+      scanSocket.onmessage = (ev) => {
+        try {
+          const d = JSON.parse(ev.data);
+          if (d.type === "cardDetected" && scanActive) {
+            scanActive = false; scanSocket.close();
+            currentUID = d.uid;
+            setStatus("✅ Carte lue : " + d.uid + " — cliquez sur Vérifier accès", "#16a34a");
+            $("checkBtn").style.display = "inline-block";
+          }
+        } catch(e){}
+      };
+      scanSocket.onerror = () => { setStatus("🔴 Lecteur NFC indisponible (ENABLE_NFC=true ?)", "#ef4444"); scanActive=false; };
+      setTimeout(()=>{ if(scanActive){scanActive=false; if(scanSocket)scanSocket.close(); setStatus("⏱️ Délai dépassé.","#f59e0b");} }, 20000);
+    }
+
+    // Vérification d'accès
+    async function checkAccess() {
+      if (!currentUID) { setStatus("Scannez d'abord une carte.", "#ef4444"); return; }
+      const spaceKey = $("spaceSelect").value;
+      const me = JSON.parse(localStorage.getItem("user") || "null");
+
+      try {
+        const res = await fetch(`${API}/access/check`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ uid: currentUID, spaceKey, agentId: me ? me._id : null })
+        });
+        const data = await res.json();
+        showResult(data, spaceKey);
+      } catch(e) {
+        setStatus("🔴 Erreur de connexion au serveur", "#ef4444");
+      }
+    }
+
+    function showResult(data, spaceKey) {
+      const ok = data.authorized;
+      $("resultCard").className = "result-card " + (ok ? "result-ok" : "result-ko");
+      $("resultIcon").textContent = ok ? "✅" : "⛔";
+      $("resultDecision").textContent = ok ? "Accès autorisé" : "Accès refusé";
+      $("resultReason").textContent = ok ? "" : data.message;
+
+      if (data.student) {
+        $("rName").textContent = `${data.student.prenom} ${data.student.nom}`;
+        $("rMatricule").textContent = data.student.matricule;
+        $("rFiliere").textContent = data.student.filiere;
+        $("rCard").textContent = data.card ? data.card.status : "—";
+        $("studentBlock").style.display = "block";
+      } else {
+        $("studentBlock").style.display = "none";
+      }
+      const opt = $("spaceSelect").selectedOptions[0];
+      $("rSpace").textContent = data.space || (opt ? opt.textContent : spaceKey);
+      $("rSpace").parentElement.style.display = "flex";
+      showStep("step-result");
+    }
+
+    function reset() {
+      currentUID = null;
+      $("checkBtn").style.display = "none";
+      setStatus("Choisissez l'espace puis scannez la carte.", "#666");
+      showStep("step-scan");
+    }
+
+    // --- Historique des accès ---
+    async function loadHistory() {
+      const el = $("historyTable");
+      el.innerHTML = `<div style="text-align:center; opacity:0.8;">Chargement...</div>`;
+      const token = localStorage.getItem("token");
+      if (!token) {
+        el.innerHTML = `<div style="text-align:center; opacity:0.9;">Connectez-vous en tant qu'agent de sécurité pour voir l'historique.</div>`;
+        return;
+      }
+      const date = $("histDate").value;
+      let query = date ? `?date=${date}` : "";
+      try {
+        const res = await fetch(`${API}/access/logs${query}`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (res.status === 401) {
+          el.innerHTML = `<div style="text-align:center;">Session expirée. Reconnectez-vous.</div>`;
+          return;
+        }
+        const data = await res.json();
+        const logs = data.logs || [];
+        if (!logs.length) { el.innerHTML = `<div style="text-align:center; opacity:0.9;">Aucun accès enregistré.</div>`; return; }
+
+        el.innerHTML = `
+          <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <thead><tr style="text-align:left; border-bottom:1px solid rgba(255,255,255,0.3);">
+              <th style="padding:0.5rem;">Date</th><th>Étudiant</th><th>Matricule</th><th>Espace</th><th>Décision</th><th>Motif</th>
+            </tr></thead>
+            <tbody>
+              ${logs.map(l => `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.12);">
+                  <td style="padding:0.5rem; font-size:11px;">${new Date(l.timestamp).toLocaleString('fr-FR')}</td>
+                  <td>${l.studentName}</td>
+                  <td>${l.studentMatricule}</td>
+                  <td>${l.spaceLabel || l.spaceKey || '—'}</td>
+                  <td>${l.decision === 'authorized'
+                    ? '<span style="color:#4ade80; font-weight:600;">✅ Autorisé</span>'
+                    : '<span style="color:#fca5a5; font-weight:600;">⛔ Refusé</span>'}</td>
+                  <td style="font-size:11px;">${l.messageFr}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>`;
+      } catch(e) {
+        el.innerHTML = `<div style="text-align:center;">Erreur de chargement.</div>`;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadSpaces();
+      $("scanBtn").addEventListener("click", scanCard);
+      $("checkBtn").addEventListener("click", checkAccess);
+      $("nextBtn").addEventListener("click", reset);
+      $("navCheck").addEventListener("click", () => showStep("step-scan"));
+      $("navHistory").addEventListener("click", () => { showStep("step-history"); loadHistory(); });
+      $("histRefresh").addEventListener("click", loadHistory);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Campus — Agent de Paiement</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      Smart Campus
+      <small>Agent de Paiement</small>
+    </div>
+    <div class="sidebar-user">
+      <strong id="sbName">—</strong>
+      <span id="sbRole">Agent de Paiement</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-tab="recharge">Recharge Portefeuille</div>
+      <div class="nav-item" data-tab="history">Historique</div>
+      <div class="nav-item" data-tab="account">Mon compte</div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-ghost btn-full" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- ============================= RECHARGE PORTEFEUILLE ============================= -->
+    <section id="tab-recharge" class="section active">
+      <div class="page-title">Recharge Portefeuille Étudiant</div>
+
+      <!-- Recherche de carte -->
+      <div class="card">
+        <div class="card-title">1. Identifier la carte de l'étudiant</div>
+        <div style="background: #f8f9fa; border-left: 4px solid var(--primary); padding: 1rem; margin-bottom: 1rem;">
+          <strong>📡 Mode de fonctionnement :</strong><br>
+          Cliquez sur <strong>Scanner</strong> puis posez la carte de l'étudiant sur le lecteur ACR122U.
+          En l'absence de lecteur, vous pouvez aussi saisir manuellement l'UID imprimé sur la carte.
+        </div>
+        <div class="form-grid" style="grid-template-columns: 1fr auto auto;">
+          <div class="field">
+            <label>UID de la carte étudiante</label>
+            <input type="text" id="cardUID" placeholder="ex: 04A1B2C3D4E5F6" style="text-transform: uppercase;" maxlength="14">
+            <span class="field-hint" id="scanHint">Cliquez sur Scanner ou saisissez l'UID (8-14 caractères)</span>
+          </div>
+          <div class="field" style="display: flex; align-items: end;">
+            <button id="scanCardBtn" class="btn-ghost">📡 Scanner</button>
+          </div>
+          <div class="field" style="display: flex; align-items: end;">
+            <button id="searchCardBtn" class="btn-primary">🔍 Rechercher</button>
+          </div>
+        </div>
+        <div id="searchCardMsg"></div>
+      </div>
+
+      <!-- Informations étudiant -->
+      <div class="card" id="studentInfoCard" style="display: none;">
+        <div class="card-title">2. Informations étudiant</div>
+        <div class="details-grid">
+          <div class="detail-row">
+            <span>Nom complet</span>
+            <strong id="studentName">—</strong>
+          </div>
+          <div class="detail-row">
+            <span>Matricule</span>
+            <strong id="studentMatricule">—</strong>
+          </div>
+          <div class="detail-row">
+            <span>Email</span>
+            <strong id="studentEmail">—</strong>
+          </div>
+          <div class="detail-row">
+            <span>Statut carte</span>
+            <span id="cardStatus">—</span>
+          </div>
+          <div class="detail-row">
+            <span>Solde actuel</span>
+            <strong id="currentBalance" style="color: var(--primary); font-size: 1.1em;">—</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulaire de recharge -->
+      <div class="card" id="rechargeFormCard" style="display: none;">
+        <div class="card-title">3. Effectuer la recharge</div>
+        <div style="background: #e6f3ff; border: 1px solid #b3d9ff; border-radius: 6px; padding: 1rem; margin-bottom: 1rem;">
+          <strong>📋 Procédure :</strong><br>
+          1. Saisissez le montant à recharger<br>
+          2. L'étudiant saisit son code PIN dans le champ prévu<br>
+          3. Validez la transaction
+        </div>
+        <form id="rechargeForm">
+          <div class="form-grid">
+            <div class="field">
+              <label>Montant à recharger (XOF)</label>
+              <input type="number" id="rechargeAmount" min="100" max="100000" step="100" placeholder="ex: 5000" required>
+              <span class="field-hint">Minimum 100 XOF, Maximum 100,000 XOF par recharge</span>
+            </div>
+            <div class="field">
+              <label>Code PIN de l'étudiant</label>
+              <input type="password" id="studentPIN" maxlength="6" placeholder="••••••" required inputmode="numeric">
+              <span class="field-hint">⚠️ L'étudiant doit saisir lui-même son code PIN</span>
+            </div>
+          </div>
+
+          <!-- Récapitulatif -->
+          <div id="rechargeSummary" style="background: var(--bg); padding: 1rem; border-radius: 6px; margin: 1rem 0; display: none;">
+            <h4 style="margin-bottom: 0.5rem;">Récapitulatif :</h4>
+            <p style="margin: 0.25rem 0;">Solde actuel : <strong id="summaryCurrentBalance">—</strong></p>
+            <p style="margin: 0.25rem 0;">Montant recharge : <strong id="summaryAmount">—</strong></p>
+            <p style="margin: 0.25rem 0;">Nouveau solde : <strong id="summaryNewBalance" style="color: var(--success);">—</strong></p>
+          </div>
+
+          <div id="rechargeFormMsg"></div>
+
+          <div style="display: flex; gap: 1rem;">
+            <button type="button" id="resetFormBtn" class="btn-ghost">Réinitialiser</button>
+            <button type="submit" id="validateRechargeBtn" style="flex: 1;">Valider la recharge</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Reçu de recharge -->
+      <div class="card" id="receiptCard" style="display: none;">
+        <div class="card-title">✅ Recharge effectuée avec succès</div>
+        <div class="receipt">
+          <div style="text-align: center; margin-bottom: 1rem;">
+            <h3>Smart Campus - Reçu de recharge</h3>
+            <p style="color: var(--muted); font-size: 0.9em;">Transaction ID: <span id="receiptTransactionId">—</span></p>
+          </div>
+
+          <div class="receipt-details">
+            <div class="receipt-row">
+              <span>Date</span>
+              <strong id="receiptDate">—</strong>
+            </div>
+            <div class="receipt-row">
+              <span>Étudiant</span>
+              <strong id="receiptStudentName">—</strong>
+            </div>
+            <div class="receipt-row">
+              <span>Matricule</span>
+              <strong id="receiptMatricule">—</strong>
+            </div>
+            <div class="receipt-row">
+              <span>Montant rechargé</span>
+              <strong id="receiptAmount">—</strong>
+            </div>
+            <div class="receipt-row">
+              <span>Ancien solde</span>
+              <span id="receiptOldBalance">—</span>
+            </div>
+            <div class="receipt-row">
+              <span>Nouveau solde</span>
+              <strong id="receiptNewBalance" style="color: var(--success);">—</strong>
+            </div>
+            <div class="receipt-row">
+              <span>Agent</span>
+              <span id="receiptAgent">—</span>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 1rem;">
+            <button id="printReceiptBtn" class="btn-ghost">🖨️ Imprimer</button>
+            <button id="newRechargeBtn" class="btn-primary">Nouvelle recharge</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================= HISTORIQUE ============================= -->
+    <section id="tab-history" class="section">
+      <div class="page-title">Historique des recharges</div>
+
+      <div class="card">
+        <div class="card-title">Toutes les recharges (bornes + agents)</div>
+
+        <!-- Filtres -->
+        <div style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
+          <div class="field" style="margin: 0; flex: 1;">
+            <input type="date" id="filterDate" style="width: 100%;">
+          </div>
+          <button id="loadHistoryBtn" class="btn-ghost">Actualiser</button>
+        </div>
+
+        <div class="table-wrap">
+          <div id="historyTable"><div class="state-msg">Chargement...</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= MON COMPTE ============================= -->
+    <section id="tab-account" class="section">
+      <div class="page-title">Mon compte</div>
+
+      <div class="card">
+        <h3>Informations personnelles</h3>
+        <div class="details-grid" style="margin-bottom: 2rem;">
+          <div class="detail-row">
+            <span>Nom complet</span>
+            <strong id="accountName">—</strong>
+          </div>
+          <div class="detail-row">
+            <span>Email</span>
+            <strong id="accountEmail">—</strong>
+          </div>
+          <div class="detail-row">
+            <span>Rôle</span>
+            <strong>Agent de Paiement</strong>
+          </div>
+        </div>
+
+        <h3>Sécurité</h3>
+        <div id="changePasswordForm">
+          <div class="field">
+            <label for="currentPassword">Mot de passe actuel</label>
+            <input type="password" id="currentPassword" required>
+          </div>
+          <div class="field">
+            <label for="newPassword">Nouveau mot de passe</label>
+            <input type="password" id="newPassword" required>
+          </div>
+          <div class="field">
+            <label for="confirmPassword">Confirmer le nouveau mot de passe</label>
+            <input type="password" id="confirmPassword" required>
+          </div>
+          <div id="passwordMsg"></div>
+          <button id="changePasswordBtn" type="button">Changer le mot de passe</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="payment-agent.js"></script>
+</body>
+</html>

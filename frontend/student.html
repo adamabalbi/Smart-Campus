@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Campus — Espace Étudiant</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="student.css">
+</head>
+<body>
+<div class="layout">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      Smart Campus
+      <small>Espace Étudiant</small>
+    </div>
+    <div class="sidebar-user">
+      <strong id="sbName">—</strong>
+      <span id="sbMatricule"></span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-tab="profile">Mon profil</div>
+      <div class="nav-item" data-tab="wallet">Mon portefeuille</div>
+      <div class="nav-item" data-tab="card">Ma carte</div>
+      <div class="nav-item" data-tab="notifications">
+        Notifications
+        <span id="notifBadge" class="notif-badge hidden"></span>
+      </div>
+      <div class="nav-item" data-tab="security">Sécurité</div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-ghost btn-full" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+
+    <!-- Bannière mot de passe temporaire -->
+    <div id="pwBanner" class="banner hidden">
+      Votre mot de passe est temporaire — pensez à le changer dans <strong>Sécurité du compte</strong>.
+    </div>
+
+    <!-- Résumé (toujours visible) -->
+    <div class="student-summary" id="summaryCard">
+      <div class="state-msg">Chargement...</div>
+    </div>
+
+    <!-- ============================= PROFIL ============================= -->
+    <section id="tab-profile" class="section active">
+      <div class="page-title">Mon profil</div>
+
+      <div class="card">
+        <div class="card-title">Informations personnelles</div>
+        <div id="profileInfo"><div class="state-msg">Chargement...</div></div>
+      </div>
+
+      <div class="card" style="max-width:420px">
+        <div class="card-title">Modifier mon téléphone</div>
+        <form id="formTelephone">
+          <div class="field">
+            <label>Numéro de téléphone</label>
+            <input type="text" id="inputTelephone" placeholder="+221 77 000 00 00">
+          </div>
+          <div id="msgTelephone"></div>
+          <button type="submit">Enregistrer</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============================= PORTEFEUILLE ============================= -->
+    <section id="tab-wallet" class="section">
+      <div class="page-title">Mon portefeuille électronique</div>
+
+      <!-- Solde actuel -->
+      <div class="student-card">
+        <div class="card-header">
+          <span class="card-icon">💰</span>
+          <h3>Solde actuel</h3>
+        </div>
+        <div class="balance-display">
+          <div class="balance-amount" id="walletBalance">— XOF</div>
+          <div class="balance-status" id="walletStatus">—</div>
+        </div>
+        <div class="balance-actions">
+          <button class="btn-ghost" id="refreshBalanceBtn">🔄 Actualiser</button>
+          <button class="btn-primary" id="rechargeRequestBtn">➕ Demander une recharge</button>
+        </div>
+      </div>
+
+      <!-- Recharge rapide via borne -->
+      <div class="student-card">
+        <div class="card-header">
+          <span class="card-icon">🏧</span>
+          <h3>Recharge via borne</h3>
+        </div>
+        <p style="color: var(--muted); margin-bottom: 1rem;">
+          Trouvez une borne de recharge sur le campus pour recharger votre portefeuille instantanément.
+        </p>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Montant minimum</span>
+            <span class="info-value">100 XOF</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Montant maximum</span>
+            <span class="info-value">100,000 XOF</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Disponibilité</span>
+            <span class="info-value">24h/24</span>
+          </div>
+        </div>
+        <button class="btn-primary btn-full" id="findKioskBtn">📍 Localiser les bornes</button>
+      </div>
+
+      <!-- Historique des transactions -->
+      <div class="student-card">
+        <div class="card-header">
+          <span class="card-icon">📊</span>
+          <h3>Historique des transactions</h3>
+        </div>
+
+        <!-- Filtres -->
+        <div style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+          <select id="transactionTypeFilter" style="flex: 1; min-width: 150px;">
+            <option value="">Tous les types</option>
+            <option value="recharge">Recharges</option>
+            <option value="payment">Paiements</option>
+            <option value="refund">Remboursements</option>
+          </select>
+          <select id="transactionChannelFilter" style="flex: 1; min-width: 150px;">
+            <option value="">Tous les canaux</option>
+            <option value="agent">Par agent</option>
+            <option value="kiosk">Via borne</option>
+            <option value="online">En ligne</option>
+          </select>
+          <button id="filterTransactionsBtn" class="btn-ghost">Filtrer</button>
+        </div>
+
+        <!-- Liste des transactions -->
+        <div class="transaction-list" id="transactionsList">
+          <div class="state-msg">Chargement de l'historique...</div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="transactionsPagination" style="display: none;">
+          <button id="prevPageBtn" class="btn-ghost">← Précédent</button>
+          <span id="pageInfo">Page 1 sur 1</span>
+          <button id="nextPageBtn" class="btn-ghost">Suivant →</button>
+        </div>
+      </div>
+
+      <!-- Plafonds et limites -->
+      <div class="student-card">
+        <div class="card-header">
+          <span class="card-icon">⚖️</span>
+          <h3>Plafonds et limites</h3>
+        </div>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Limite par recharge</span>
+            <span class="info-value">100,000 XOF</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Limite quotidienne</span>
+            <span class="info-value" id="dailyLimitDisplay">50,000 XOF</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Limite mensuelle</span>
+            <span class="info-value" id="monthlyLimitDisplay">500,000 XOF</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Solde maximum</span>
+            <span class="info-value">1,000,000 XOF</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================= CARTE ============================= -->
+    <section id="tab-card" class="section">
+      <div class="page-title">Ma carte</div>
+      <div id="cardContent"><div class="state-msg">Chargement...</div></div>
+    </section>
+
+    <!-- ============================= NOTIFICATIONS ============================= -->
+    <section id="tab-notifications" class="section">
+      <div class="page-title">Notifications</div>
+      <div id="notificationsContent"><div class="state-msg">Chargement...</div></div>
+    </section>
+
+    <!-- ============================= SÉCURITÉ ============================= -->
+    <section id="tab-security" class="section">
+      <div class="page-title">Sécurité du compte</div>
+
+      <div class="card" style="max-width:440px">
+        <div class="card-title">Informations de session</div>
+        <div id="securityInfo"></div>
+      </div>
+
+      <div class="card" style="max-width:440px">
+        <div class="card-title">Changer mon mot de passe</div>
+        <form id="formChangePassword">
+          <div class="field">
+            <label>Mot de passe actuel</label>
+            <input type="password" id="cpOld" required>
+          </div>
+          <div class="field">
+            <label>Nouveau mot de passe</label>
+            <input type="password" id="cpNew" required placeholder="8 caractères minimum">
+          </div>
+          <div id="msgChangePassword"></div>
+          <button type="submit">Changer le mot de passe</button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+</div>
+<script src="student.js"></script>
+</body>
+</html>

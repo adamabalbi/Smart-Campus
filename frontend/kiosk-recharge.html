@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Campus — Borne de Recharge</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Styles spécifiques pour l'interface borne */
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .kiosk-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+
+    .kiosk-screen {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 600px;
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .kiosk-header {
+      background: var(--primary);
+      color: white;
+      text-align: center;
+      padding: 1.5rem;
+    }
+
+    .kiosk-header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+
+    .kiosk-header p {
+      margin: 0.5rem 0 0 0;
+      opacity: 0.9;
+      font-size: 1rem;
+    }
+
+    .kiosk-content {
+      flex: 1;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .kiosk-step {
+      display: none;
+      width: 100%;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    .kiosk-step.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .step-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    .step-instruction {
+      font-size: 1.1rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+
+    .kiosk-input {
+      width: 100%;
+      max-width: 300px;
+      padding: 1rem;
+      font-size: 1.2rem;
+      text-align: center;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    .kiosk-input:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+
+    .amount-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      max-width: 400px;
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+
+    .amount-btn {
+      padding: 1.5rem 1rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: 2px solid var(--primary);
+      background: white;
+      color: var(--primary);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .amount-btn:hover, .amount-btn.selected {
+      background: var(--primary);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .kiosk-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      min-width: 200px;
+      transition: all 0.3s;
+      margin: 0.5rem;
+    }
+
+    .kiosk-btn:hover {
+      background: #5a67d8;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .kiosk-btn:disabled {
+      background: var(--muted);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .kiosk-btn.secondary {
+      background: var(--muted);
+      color: var(--text);
+    }
+
+    .kiosk-btn.secondary:hover {
+      background: #a0aec0;
+    }
+
+    .error-message {
+      background: #fed7d7;
+      color: #e53e3e;
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+      border: 1px solid #fbb6ce;
+    }
+
+    .success-message {
+      background: #c6f6d5;
+      color: #25885b;
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+      border: 1px solid #9ae6b4;
+    }
+
+    .receipt {
+      background: #f8f9fa;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      text-align: left;
+    }
+
+    .receipt-header {
+      text-align: center;
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 0.5rem 0;
+    }
+
+    .receipt-total {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--success);
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+      margin-top: 1rem;
+    }
+
+    .kiosk-footer {
+      background: #f8f9fa;
+      padding: 1rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .pin-input {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin: 1rem 0;
+    }
+
+    .pin-digit {
+      width: 50px;
+      height: 50px;
+      text-align: center;
+      font-size: 1.5rem;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .pin-digit:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="kiosk-container">
+  <div class="kiosk-screen">
+
+    <!-- En-tête -->
+    <div class="kiosk-header">
+      <h1>🏫 Smart Campus</h1>
+      <p>Borne de Recharge Portefeuille Étudiant</p>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="kiosk-content">
+
+      <!-- Étape 1: Présentation de la carte -->
+      <div class="kiosk-step active" id="step-card">
+        <div class="step-icon">💳</div>
+        <div class="step-title">Présentez votre carte étudiante</div>
+        <div class="step-instruction">
+          Scannez votre carte ou saisissez manuellement l'UID de votre carte étudiante
+        </div>
+
+        <input type="text"
+               class="kiosk-input"
+               id="cardUIDInput"
+               placeholder="UID de la carte"
+               style="text-transform: uppercase;"
+               maxlength="14">
+
+        <div id="cardError" class="error-message" style="display: none;"></div>
+
+        <button class="kiosk-btn" id="validateCardBtn">Valider</button>
+      </div>
+
+      <!-- Étape 2: Saisie du PIN -->
+      <div class="kiosk-step" id="step-pin">
+        <div class="step-icon">🔒</div>
+        <div class="step-title">Saisissez votre code PIN</div>
+        <div class="step-instruction">
+          Code à 4-6 chiffres
+        </div>
+
+        <div id="studentInfo" style="margin-bottom: 1rem;"></div>
+
+        <input type="password"
+               class="kiosk-input"
+               id="pinInput"
+               placeholder="••••••"
+               maxlength="6"
+               inputmode="numeric">
+
+        <div id="pinError" class="error-message" style="display: none;"></div>
+
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+          <button class="kiosk-btn secondary" id="backToPinBtn">Retour</button>
+          <button class="kiosk-btn" id="validatePinBtn">Valider</button>
+        </div>
+      </div>
+
+      <!-- Étape 3: Choix du montant -->
+      <div class="kiosk-step" id="step-amount">
+        <div class="step-icon">💰</div>
+        <div class="step-title">Choisissez le montant</div>
+        <div class="step-instruction">
+          Sélectionnez un montant prédéfini ou saisissez un montant personnalisé
+        </div>
+
+        <div id="balanceInfo" style="margin-bottom: 1rem;"></div>
+
+        <div class="amount-buttons">
+          <button class="amount-btn" data-amount="1000">1 000 XOF</button>
+          <button class="amount-btn" data-amount="2000">2 000 XOF</button>
+          <button class="amount-btn" data-amount="5000">5 000 XOF</button>
+          <button class="amount-btn" data-amount="10000">10 000 XOF</button>
+        </div>
+
+        <div style="margin: 1rem 0;">
+          <input type="number"
+                 class="kiosk-input"
+                 id="customAmount"
+                 placeholder="Montant personnalisé"
+                 min="100"
+                 max="100000"
+                 step="100">
+        </div>
+
+        <div id="amountError" class="error-message" style="display: none;"></div>
+
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+          <button class="kiosk-btn secondary" id="backToAmountBtn">Retour</button>
+          <button class="kiosk-btn" id="continueToConfirmBtn" disabled>Continuer</button>
+        </div>
+      </div>
+
+      <!-- Étape 4: Confirmation -->
+      <div class="kiosk-step" id="step-confirm">
+        <div class="step-icon">✅</div>
+        <div class="step-title">Confirmez la recharge</div>
+        <div class="step-instruction">
+          Vérifiez les informations avant de procéder au paiement
+        </div>
+
+        <div class="receipt">
+          <div class="receipt-header">
+            <h3>Récapitulatif de recharge</h3>
+          </div>
+          <div class="receipt-row">
+            <span>Étudiant :</span>
+            <strong id="confirmStudentName">—</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Solde actuel :</span>
+            <span id="confirmCurrentBalance">—</span>
+          </div>
+          <div class="receipt-row">
+            <span>Montant recharge :</span>
+            <strong id="confirmAmount">—</strong>
+          </div>
+          <div class="receipt-row receipt-total">
+            <span>Nouveau solde :</span>
+            <strong id="confirmNewBalance">—</strong>
+          </div>
+        </div>
+
+        <div id="confirmError" class="error-message" style="display: none;"></div>
+
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+          <button class="kiosk-btn secondary" id="backToConfirmBtn">Retour</button>
+          <button class="kiosk-btn" id="processRechargeBtn">Procéder au paiement</button>
+        </div>
+      </div>
+
+      <!-- Étape 5: Succès -->
+      <div class="kiosk-step" id="step-success">
+        <div class="step-icon">🎉</div>
+        <div class="step-title">Recharge réussie !</div>
+        <div class="step-instruction">
+          Votre portefeuille a été rechargé avec succès
+        </div>
+
+        <div class="success-message">
+          <strong>Transaction validée</strong><br>
+          Votre recharge a été effectuée avec succès.
+        </div>
+
+        <div class="receipt">
+          <div class="receipt-header">
+            <h3>🧾 Reçu de recharge</h3>
+            <p style="font-size: 0.9em; color: var(--muted);">
+              Transaction #<span id="successTransactionId">—</span>
+            </p>
+          </div>
+          <div class="receipt-row">
+            <span>Date :</span>
+            <span id="successDate">—</span>
+          </div>
+          <div class="receipt-row">
+            <span>Étudiant :</span>
+            <strong id="successStudentName">—</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Montant rechargé :</span>
+            <strong id="successAmount">—</strong>
+          </div>
+          <div class="receipt-row receipt-total">
+            <span>Nouveau solde :</span>
+            <strong id="successNewBalance">—</strong>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+          <button class="kiosk-btn secondary" id="printReceiptBtn">🖨️ Imprimer reçu</button>
+          <button class="kiosk-btn" id="newTransactionBtn">Nouvelle recharge</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Pied de page -->
+    <div class="kiosk-footer">
+      <p>🔒 Connexion sécurisée • Smart Campus © 2024</p>
+    </div>
+
+  </div>
+</div>
+
+<script src="kiosk-recharge.js"></script>
+</body>
+</html>

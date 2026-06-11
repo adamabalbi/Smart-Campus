@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Campus — Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      Smart Campus
+      <small>Administration</small>
+    </div>
+    <div class="sidebar-user">
+      <strong id="sbName">—</strong>
+      <span id="sbRole"></span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item super-only" data-tab="stats">Tableau de bord</div>
+      <div class="nav-item" data-tab="users">Utilisateurs</div>
+      <div class="nav-item" data-tab="students">Étudiants</div>
+      <div class="nav-item" data-tab="cards">Cartes</div>
+      <div class="nav-item" data-tab="registrations">Validation des comptes</div>
+      <div class="nav-item" data-tab="services">Services campus</div>
+      <div class="nav-item" data-tab="access">Espaces d'accès</div>
+      <div class="nav-item" data-tab="alerts">🚨 Alertes</div>
+      <div class="nav-item" data-tab="audit">📜 Historique</div>
+      <div class="nav-item" data-tab="account">Mon compte</div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-ghost btn-full" id="logoutBtn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+
+    <!-- ============================= STATS (super_admin + admin) ============================= -->
+    <section id="tab-stats" class="section super-only-section">
+      <div class="page-title" id="dashTitle">Tableau de bord</div>
+
+      <!-- Grille de stats (contenu chargé par JS selon le rôle) -->
+      <div class="stats-grid-3" id="statsGrid">
+        <div class="stat-card"><div class="stat-label">Chargement</div><div class="stat-value">—</div></div>
+        <div class="stat-card"><div class="stat-label">Chargement</div><div class="stat-value">—</div></div>
+        <div class="stat-card"><div class="stat-label">Chargement</div><div class="stat-value">—</div></div>
+      </div>
+
+      <!-- Gestion utilisateurs (titre et table chargés par JS) -->
+      <div class="dash-section-title" id="mgmtTitle">Gestion des utilisateurs</div>
+      <div class="card">
+        <div class="table-wrap">
+          <div id="dashUsersTable"><div class="state-msg">Chargement...</div></div>
+        </div>
+      </div>
+
+      <!-- Paramètres système — super_admin uniquement -->
+      <div id="settingsSection">
+        <div class="dash-section-title">Paramètres système</div>
+        <div class="settings-policies">
+
+          <div class="card">
+            <div class="card-title">Politique OTP</div>
+            <div class="form-grid">
+              <div class="field">
+                <label>Tentatives maximum</label>
+                <input type="number" id="setOtpMaxAttempts" min="1" max="10">
+                <span class="field-hint">Nombre d'essais avant blocage du code</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Durée d'expiration OTP</div>
+            <div class="form-grid">
+              <div class="field">
+                <label>Expiration (minutes)</label>
+                <input type="number" id="setOtpExpiry" min="1" max="60">
+                <span class="field-hint">Durée de validité du code après envoi</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Politique mot de passe</div>
+            <div class="form-grid">
+              <div class="field">
+                <label>Longueur minimale</label>
+                <input type="number" id="setPasswordMinLength" min="6" max="32">
+                <span class="field-hint">Nombre de caractères minimum requis</span>
+              </div>
+              <div class="field">
+                <label>Durée du token JWT (heures)</label>
+                <input type="number" id="setJwtExpiry" min="1" max="24">
+                <span class="field-hint">Durée de session après connexion</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Politique PIN carte</div>
+            <div class="form-grid">
+              <div class="field">
+                <label>Tentatives maximum</label>
+                <input type="number" id="setPinMaxAttempts" min="1" max="10">
+                <span class="field-hint">Essais avant blocage temporaire</span>
+              </div>
+              <div class="field">
+                <label>Durée de blocage (minutes)</label>
+                <input type="number" id="setPinBlockDuration" min="1" max="1440">
+                <span class="field-hint">Attente après dépassement des essais</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div id="msgSettings"></div>
+        <button class="btn-primary" id="saveSettingsBtn" style="margin-bottom:2rem">Enregistrer les paramètres</button>
+      </div>
+
+    </section>
+
+    <!-- ============================= USERS ============================= -->
+    <section id="tab-users" class="section active">
+      <div class="page-title">Gestion des utilisateurs</div>
+
+      <div class="card">
+        <div class="card-title">Créer un utilisateur</div>
+        <form id="formCreateUser">
+          <div class="form-grid">
+            <div class="field"><label>Nom</label><input type="text" id="uNom" required></div>
+            <div class="field"><label>Prénom</label><input type="text" id="uPrenom" required></div>
+            <div class="field"><label>Email</label><input type="email" id="uEmail" required></div>
+            <div class="field">
+              <label>Rôle</label>
+              <select id="uRole">
+                <!-- Rempli dynamiquement selon le rôle connecté -->
+              </select>
+            </div>
+          </div>
+          <div id="msgCreateUser"></div>
+          <button type="submit">Créer l'utilisateur</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Liste des utilisateurs</div>
+        <div class="table-wrap">
+          <div id="usersTable"><div class="state-msg">Chargement...</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= STUDENTS ============================= -->
+    <section id="tab-students" class="section">
+      <div class="page-title">Gestion des étudiants</div>
+
+      <div class="card">
+        <div class="card-title">Liste des étudiants</div>
+
+        <!-- Barre de recherche -->
+        <div style="margin-bottom: 1rem;">
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input
+              type="text"
+              id="studentSearch"
+              placeholder="Rechercher par nom, prénom, email, matricule..."
+              style="flex: 1; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;">
+            <button id="clearSearchBtn" class="btn-ghost" title="Effacer la recherche">✕</button>
+          </div>
+          <div id="searchInfo" style="font-size: 12px; color: var(--muted); margin-top: 0.25rem; min-height: 16px;"></div>
+        </div>
+
+        <div class="table-wrap">
+          <div id="studentsTable"><div class="state-msg">Chargement...</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= CARDS ============================= -->
+    <section id="tab-cards" class="section">
+      <div class="page-title">Module Cartes RFID/NFC</div>
+
+      <div class="module-notice">
+        Mode simulation — Les UID sont saisis manuellement.
+        Lorsque le lecteur ACR122U sera disponible, l'UID sera lu automatiquement depuis la carte MIFARE.
+      </div>
+
+      <!-- Émettre une carte -->
+      <div class="card">
+        <div class="card-title">Émettre une carte</div>
+        <form id="formCreateCard">
+          <div class="form-grid">
+            <div class="field">
+              <label>Étudiant</label>
+              <select id="cStudentId" required>
+                <option value="">Sélectionner...</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>UID carte</label>
+              <div style="display:flex;gap:.4rem">
+                <input type="text" id="cUid" required placeholder="ex: 04A1B2C3D4" style="flex:1;text-transform:uppercase">
+                <button type="button" id="scanCardBtn" class="btn-ghost" title="Scanner une carte physique sur le lecteur">📡 Scanner</button>
+                <button type="button" id="generateUid" class="btn-ghost" title="Générer un UID simulé">⟳ Simuler</button>
+              </div>
+              <span id="scanStatus" style="font-size:11px;color:var(--muted)">8–14 caractères hexadécimaux</span>
+            </div>
+            <div class="field">
+              <label>Type de carte</label>
+              <select id="cType">
+                <option value="MIFARE_CLASSIC_1K">MIFARE Classic 1K</option>
+                <option value="RFID-NFC">RFID-NFC</option>
+                <option value="NTAG">NTAG</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>PIN (4–6 chiffres)</label>
+              <input type="password" id="cPin" required maxlength="6" inputmode="numeric" placeholder="••••">
+            </div>
+            <div class="field">
+              <label>Date d'expiration</label>
+              <input type="date" id="cExpiresAt">
+            </div>
+          </div>
+          <div id="msgCreateCard"></div>
+          <button type="submit">Émettre la carte</button>
+        </form>
+      </div>
+
+      <!-- Recherche par UID + Vérification PIN -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+
+        <div class="card">
+          <div class="card-title">Rechercher par UID</div>
+          <div style="display:flex;gap:.5rem;margin-bottom:.75rem">
+            <input type="text" id="searchUid" placeholder="04A1B2C3D4" style="flex:1;padding:.5rem .75rem;border:1px solid var(--border);border-radius:6px;font-size:14px;text-transform:uppercase">
+            <button class="btn-primary" id="searchUidBtn">Rechercher</button>
+          </div>
+          <div id="searchUidResult"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Vérifier un PIN</div>
+          <div class="form-grid" style="grid-template-columns:1fr">
+            <div class="field">
+              <label>UID de la carte</label>
+              <input type="text" id="verifyUid" placeholder="04A1B2C3D4" style="text-transform:uppercase">
+            </div>
+            <div class="field">
+              <label>Code PIN</label>
+              <input type="password" id="verifyPin" maxlength="6" inputmode="numeric" placeholder="••••">
+            </div>
+          </div>
+          <div id="verifyPinResult"></div>
+          <button class="btn-primary" id="verifyPinBtn" style="margin-top:.5rem">Vérifier</button>
+        </div>
+
+      </div>
+
+      <!-- Liste des cartes -->
+      <div class="card">
+        <div class="card-title">Cartes enregistrées</div>
+        <div class="table-wrap">
+          <div id="cardsTable"><div class="state-msg">Chargement...</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= VALIDATION DES COMPTES ============================= -->
+    <section id="tab-registrations" class="section">
+      <div class="page-title">Validation des comptes étudiants</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">
+        Les demandes dont l'email a été confirmé sont affichées ici pour validation.
+        Après validation, le compte étudiant est créé et les identifiants envoyés par email.
+      </p>
+
+      <div class="reg-filters">
+        <button class="reg-filter-btn active" data-status="email_verified">Email confirmé</button>
+        <button class="reg-filter-btn" data-status="">Toutes</button>
+        <button class="reg-filter-btn" data-status="approved">Validées</button>
+        <button class="reg-filter-btn" data-status="rejected">Refusées</button>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <div id="registrationsTable"><div class="state-msg">Chargement...</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= SERVICES CAMPUS ============================= -->
+    <section id="tab-services" class="section">
+      <div class="page-title">Services du campus</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">
+        Activez ou désactivez les services de paiement (Cantine, Bibliothèque, Imprimerie).
+        Un service désactivé refuse tout paiement et bloque sa page.
+      </p>
+      <div class="card">
+        <div class="table-wrap">
+          <div id="servicesTable"><div class="state-msg">Chargement...</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= ESPACES D'ACCÈS ============================= -->
+    <section id="tab-access" class="section">
+      <div class="page-title">Espaces d'accès</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">
+        Activez/désactivez les espaces et définissez les règles d'accès (filières, niveaux, horaires).
+        Laisser un champ vide = aucune restriction sur ce critère.
+      </p>
+      <div class="card">
+        <div class="table-wrap">
+          <div id="accessSpacesTable"><div class="state-msg">Chargement...</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= ALERTES IA ============================= -->
+    <section id="tab-alerts" class="section">
+      <div class="page-title">Alertes — paiements suspects (IA)</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">
+        Paiements détectés comme suspects par le modèle d'intelligence artificielle.
+      </p>
+      <div class="reg-filters">
+        <button class="alert-filter-btn active" data-status="new">Nouvelles</button>
+        <button class="alert-filter-btn" data-status="">Toutes</button>
+        <button class="alert-filter-btn" data-status="reviewed">Traitées</button>
+        <button class="alert-filter-btn" data-status="dismissed">Ignorées</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <div id="alertsTable"><div class="state-msg">Chargement...</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= HISTORIQUE / AUDIT ============================= -->
+    <section id="tab-audit" class="section">
+      <div class="page-title">Historique et traçabilité</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">
+        Journal d'audit : qui a fait quoi, quand, sur quel élément, avec quel résultat.
+      </p>
+
+      <div class="card" style="margin-bottom:1rem">
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end">
+          <div class="field" style="margin:0">
+            <label>Action</label>
+            <select id="auditActionFilter"><option value="">Toutes</option></select>
+          </div>
+          <div class="field" style="margin:0">
+            <label>Résultat</label>
+            <select id="auditStatusFilter">
+              <option value="">Tous</option>
+              <option value="success">Succès</option>
+              <option value="failure">Échec</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0">
+            <label>Du</label>
+            <input type="date" id="auditFromFilter">
+          </div>
+          <div class="field" style="margin:0">
+            <label>Au</label>
+            <input type="date" id="auditToFilter">
+          </div>
+          <div class="field" style="margin:0;flex:1;min-width:180px">
+            <label>Recherche</label>
+            <input type="text" id="auditSearch" placeholder="Description…">
+          </div>
+          <button class="btn-ghost" id="auditResetBtn">Réinitialiser</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <div id="auditTable"><div class="state-msg">Chargement...</div></div>
+        </div>
+        <div id="auditPagination" style="display:flex;gap:.6rem;align-items:center;justify-content:center;margin-top:1rem"></div>
+      </div>
+    </section>
+
+    <!-- ============================= ACCOUNT ============================= -->
+    <section id="tab-account" class="section">
+      <div class="page-title">Mon compte</div>
+
+      <div class="card" style="max-width:440px">
+        <div class="card-title">Changer mon mot de passe</div>
+        <form id="formChangePassword">
+          <div class="field"><label>Mot de passe actuel</label><input type="password" id="cpOld" required></div>
+          <div class="field"><label>Nouveau mot de passe</label><input type="password" id="cpNew" required placeholder="8 caractères minimum"></div>
+          <div id="msgChangePassword"></div>
+          <button type="submit">Changer le mot de passe</button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============================= MODAL : MODIFIER CARTE ============================= -->
+<div id="editCardModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h3>Modifier la carte</h3>
+    <p id="editCardInfo" style="font-size:13px;color:var(--muted);margin-bottom:1rem"></p>
+    <div class="form-grid">
+      <div class="field">
+        <label>Type de carte</label>
+        <select id="editCardType">
+          <option value="MIFARE_CLASSIC_1K">MIFARE Classic 1K</option>
+          <option value="RFID-NFC">RFID-NFC</option>
+          <option value="NTAG">NTAG</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Date d'expiration</label>
+        <select id="editCardExpiryPreset" style="margin-bottom:.4rem">
+          <option value="">— Aucune expiration —</option>
+          <option value="1y">Dans 1 an</option>
+          <option value="2y">Dans 2 ans</option>
+          <option value="3y">Dans 3 ans</option>
+          <option value="4y">Dans 4 ans</option>
+          <option value="custom">Date personnalisée…</option>
+        </select>
+        <input type="date" id="editCardExpiry" class="hidden">
+      </div>
+    </div>
+    <div id="editCardMsg"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="editCardCancel">Annuler</button>
+      <button id="editCardConfirm">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= MODAL : STATUT ============================= -->
+<div id="statusModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h3 id="statusModalTitle">Changer le statut</h3>
+    <div class="field">
+      <label>Nouveau statut</label>
+      <select id="statusModalSelect"></select>
+    </div>
+    <div id="statusModalMsg"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="statusModalCancel">Annuler</button>
+      <button id="statusModalConfirm">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= MODAL : EDIT ÉTUDIANT ============================= -->
+<div id="editStudentModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h3>Modifier l'étudiant</h3>
+    <div class="form-grid">
+      <div class="field"><label>Nom</label><input type="text" id="eNom"></div>
+      <div class="field"><label>Prénom</label><input type="text" id="ePrenom"></div>
+      <div class="field"><label>Téléphone</label><input type="text" id="eTelephone"></div>
+      <div class="field"><label>Filière</label><input type="text" id="eFiliere"></div>
+      <div class="field"><label>Niveau</label><input type="text" id="eNiveau"></div>
+      <div class="field"><label>Département</label><input type="text" id="eDepartement"></div>
+    </div>
+    <div id="editStudentMsg"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="editStudentCancel">Annuler</button>
+      <button id="editStudentConfirm">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= MODAL : APPROUVER DOSSIER INSCRIPTION ============================= -->
+<div id="approveCardAppModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h3>Valider le dossier d'inscription</h3>
+    <p id="approveCardAppInfo" style="font-size:13px;color:var(--muted);margin-bottom:.75rem"></p>
+    <p style="font-size:13px;background:var(--bg);padding:.6rem .75rem;border-radius:6px;margin-bottom:.75rem">
+      En validant ce dossier, l'étudiant sera notifié que son inscription est acceptée.
+      Vous pourrez ensuite lui associer une carte depuis l'onglet <strong>Cartes</strong>.
+    </p>
+    <div id="approveCardAppMsg"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="approveCardAppCancel">Annuler</button>
+      <button id="approveCardAppConfirm">Valider l'inscription</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= MODAL : REJETER DEMANDE CARTE ============================= -->
+<div id="rejectCardAppModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h3>Rejeter l'inscription</h3>
+    <div class="field">
+      <label>Motif (optionnel)</label>
+      <input type="text" id="rejectCardAppReason" placeholder="ex: Dossier incomplet">
+    </div>
+    <div id="rejectCardAppMsg"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="rejectCardAppCancel">Annuler</button>
+      <button id="rejectCardAppConfirm" style="background:var(--danger);color:white;border-color:var(--danger)">Rejeter</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= MODAL : APPROUVER INSCRIPTION ============================= -->
+<div id="approveModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h3>Approuver l'inscription</h3>
+    <p id="approveModalInfo" style="font-size:13px;color:var(--muted);margin-bottom:1rem;"></p>
+    <p style="font-size:13px;background:var(--bg);padding:.6rem .75rem;border-radius:6px;margin-bottom:1rem;">
+      Un matricule sera généré automatiquement par le système.
+    </p>
+    <div id="approveModalMsg"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="approveModalCancel">Annuler</button>
+      <button id="approveModalConfirm">Valider l'inscription</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= MODAL : REJETER INSCRIPTION ============================= -->
+<div id="rejectModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h3>Rejeter l'inscription</h3>
+    <div class="field">
+      <label>Motif du rejet (optionnel)</label>
+      <input type="text" id="rejectReason" placeholder="ex: Dossier incomplet">
+    </div>
+    <div id="rejectModalMsg"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="rejectModalCancel">Annuler</button>
+      <button id="rejectModalConfirm" style="background:var(--danger);color:white;border-color:var(--danger)">Rejeter</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= MODAL : RÈGLES D'ACCÈS ESPACE ============================= -->
+<div id="spaceRulesModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h3 id="spaceRulesTitle">Règles d'accès</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:1rem;">
+      Séparez plusieurs valeurs par des virgules. Laisser vide = pas de restriction.
+    </p>
+    <div class="field">
+      <label>Filières autorisées</label>
+      <input type="text" id="srFilieres" placeholder="ex: Informatique, Gestion">
+    </div>
+    <div class="field">
+      <label>Niveaux autorisés</label>
+      <input type="text" id="srNiveaux" placeholder="ex: Licence 3, Master 1">
+    </div>
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:.5rem;">
+        <input type="checkbox" id="srEnforce" style="width:auto;"> Restreindre les horaires
+      </label>
+    </div>
+    <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="field">
+        <label>Ouverture</label>
+        <input type="time" id="srOpen" value="08:00">
+      </div>
+      <div class="field">
+        <label>Fermeture</label>
+        <input type="time" id="srClose" value="18:00">
+      </div>
+    </div>
+    <div id="spaceRulesMsg"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="spaceRulesCancel">Annuler</button>
+      <button id="spaceRulesConfirm">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= MODAL : DÉTAILS UTILISATEUR ============================= -->
+<div id="detailsModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h3>Détails de l'utilisateur</h3>
+    <div class="details-grid" id="detailsContent"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="detailsModalClose">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= MODAL : RÔLE ============================= -->
+<div id="roleModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h3>Modifier le rôle</h3>
+    <div class="field">
+      <label>Nouveau rôle</label>
+      <select id="roleModalSelect"></select>
+    </div>
+    <div id="roleModalMsg"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="roleModalCancel">Annuler</button>
+      <button id="roleModalConfirm">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= MODAL : RESET PIN ============================= -->
+<div id="pinModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h3>Réinitialiser le PIN</h3>
+    <div class="field">
+      <label>Nouveau PIN (4–6 chiffres)</label>
+      <input type="password" id="pinNewInput" maxlength="6" inputmode="numeric">
+    </div>
+    <div id="pinModalMsg"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="pinModalCancel">Annuler</button>
+      <button id="pinModalConfirm">Réinitialiser</button>
+    </div>
+  </div>
+</div>
+
+<script src="dashboard.js"></script>
+</body>
+</html>

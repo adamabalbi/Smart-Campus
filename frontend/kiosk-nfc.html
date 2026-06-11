@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kiosque NFC - Smart Campus</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .kiosk-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      color: white;
+      text-align: center;
+    }
+
+    .kiosk-title {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .kiosk-subtitle {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      margin-bottom: 3rem;
+    }
+
+    .step-container {
+      background: rgba(255,255,255,0.1);
+      border-radius: 15px;
+      padding: 3rem 2rem;
+      margin: 2rem 0;
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+
+    .step-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .step-title {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .step-description {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      line-height: 1.5;
+    }
+
+    .nfc-reader-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255,255,255,0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 25px;
+      font-size: 0.9rem;
+      margin: 1rem 0;
+    }
+
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ff4444;
+      animation: pulse 2s infinite;
+    }
+
+    .status-indicator.connected {
+      background: #44ff44;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .card-animation {
+      font-size: 6rem;
+      animation: bounce 2s infinite;
+      margin: 2rem 0;
+      display: block;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .amount-input {
+      background: rgba(255,255,255,0.9);
+      border: none;
+      border-radius: 10px;
+      padding: 1rem;
+      font-size: 1.5rem;
+      text-align: center;
+      width: 200px;
+      margin: 1rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .pin-input {
+      background: rgba(255,255,255,0.9);
+      border: none;
+      border-radius: 10px;
+      padding: 1rem;
+      font-size: 2rem;
+      text-align: center;
+      width: 250px;
+      margin: 1rem;
+      color: var(--primary);
+      font-weight: 600;
+      letter-spacing: 0.5rem;
+    }
+
+    .kiosk-btn {
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.5);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 0.5rem;
+    }
+
+    .kiosk-btn:hover {
+      background: rgba(255,255,255,0.3);
+      border-color: rgba(255,255,255,0.8);
+    }
+
+    .kiosk-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .hidden { display: none !important; }
+
+    .success-animation {
+      font-size: 8rem;
+      color: #44ff44;
+      animation: success-bounce 0.6s ease-out;
+    }
+
+    @keyframes success-bounce {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .balance-display {
+      font-size: 3rem;
+      font-weight: 700;
+      margin: 1rem 0;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .student-info {
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      text-align: left;
+    }
+
+    .student-info h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.5rem;
+    }
+
+    .student-info p {
+      margin: 0.25rem 0;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="kiosk-container">
+    <h1 class="kiosk-title">🏫 Smart Campus</h1>
+    <p class="kiosk-subtitle">Kiosque de Recharge NFC</p>
+
+    <div class="nfc-reader-status">
+      <span class="status-indicator" id="readerStatus"></span>
+      <span id="readerStatusText">Vérification du lecteur...</span>
+    </div>
+
+    <!-- Étape 1: Attente de carte -->
+    <div id="step-waiting" class="step-container">
+      <div class="step-icon card-animation">💳</div>
+      <h2 class="step-title">Approchez votre carte étudiante</h2>
+      <p class="step-description">
+        Placez votre carte NFC près du lecteur pour commencer
+      </p>
+    </div>
+
+    <!-- Étape 2: Validation PIN -->
+    <div id="step-pin" class="step-container hidden">
+      <div class="step-icon">🔐</div>
+      <h2 class="step-title">Saisissez votre code PIN</h2>
+
+      <div class="student-info" id="studentInfo"></div>
+
+      <div>
+        <input type="password"
+               id="pinInput"
+               class="pin-input"
+               placeholder="••••"
+               maxlength="4"
+               inputmode="numeric">
+      </div>
+
+      <div>
+        <button class="kiosk-btn" onclick="validatePin()">Valider PIN</button>
+        <button class="kiosk-btn" onclick="cancelTransaction()">Annuler</button>
+      </div>
+
+      <div id="pinError" class="alert alert-error hidden" style="margin-top: 1rem;"></div>
+    </div>
+
+    <!-- Étape 3: Choix du montant -->
+    <div id="step-amount" class="step-container hidden">
+      <div class="step-icon">💰</div>
+      <h2 class="step-title">Choisissez le montant à recharger</h2>
+
+      <div class="balance-display">
+        Solde actuel: <span id="currentBalance">0</span> XOF
+      </div>
+
+      <div>
+        <button class="kiosk-btn" onclick="selectAmount(1000)">1 000 XOF</button>
+        <button class="kiosk-btn" onclick="selectAmount(2000)">2 000 XOF</button>
+        <button class="kiosk-btn" onclick="selectAmount(5000)">5 000 XOF</button>
+      </div>
+
+      <div>
+        <button class="kiosk-btn" onclick="selectAmount(10000)">10 000 XOF</button>
+        <button class="kiosk-btn" onclick="selectAmount(20000)">20 000 XOF</button>
+        <input type="number"
+               id="customAmount"
+               class="amount-input"
+               placeholder="Autre montant"
+               min="100"
+               max="50000"
+               step="100">
+      </div>
+
+      <div>
+        <button class="kiosk-btn" onclick="confirmAmount()">Confirmer la recharge</button>
+        <button class="kiosk-btn" onclick="cancelTransaction()">Annuler</button>
+      </div>
+    </div>
+
+    <!-- Étape 4: Traitement -->
+    <div id="step-processing" class="step-container hidden">
+      <div class="step-icon">⏳</div>
+      <h2 class="step-title">Traitement en cours...</h2>
+      <p class="step-description">
+        Veuillez patienter pendant le traitement de votre recharge
+      </p>
+    </div>
+
+    <!-- Étape 5: Succès -->
+    <div id="step-success" class="step-container hidden">
+      <div class="step-icon success-animation">✅</div>
+      <h2 class="step-title">Recharge effectuée avec succès !</h2>
+
+      <div class="balance-display">
+        Nouveau solde: <span id="newBalance">0</span> XOF
+      </div>
+
+      <div>
+        <button class="kiosk-btn" onclick="newTransaction()">Nouvelle transaction</button>
+      </div>
+    </div>
+
+    <!-- Étape 6: Erreur -->
+    <div id="step-error" class="step-container hidden">
+      <div class="step-icon">❌</div>
+      <h2 class="step-title">Erreur de transaction</h2>
+      <p id="errorMessage" class="step-description"></p>
+
+      <div>
+        <button class="kiosk-btn" onclick="newTransaction()">Réessayer</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="kiosk-nfc.js"></script>
+</body>
+</html>

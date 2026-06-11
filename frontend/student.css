@@ -1,0 +1,292 @@
+/* ===== RÉSUMÉ ÉTUDIANT ===== */
+.student-summary {
+  background: linear-gradient(135deg, #1e293b 0%, #2563eb 100%);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  color: white;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem 1.5rem;
+}
+
+.summary-item { font-size: 13px; }
+.summary-item .label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.65;
+  margin-bottom: 0.15rem;
+}
+.summary-item .value {
+  font-weight: 600;
+  font-size: 14px;
+}
+.summary-item .value.green  { color: #86efac; }
+.summary-item .value.red    { color: #fca5a5; }
+.summary-item .value.yellow { color: #fde68a; }
+.summary-item .value.muted  { opacity: 0.6; font-weight: 400; font-style: italic; }
+
+/* ===== PROFIL INFO TABLE ===== */
+.profile-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.profile-table tr td { padding: 0.55rem 0.5rem; border-bottom: 1px solid var(--border); }
+.profile-table tr:last-child td { border-bottom: none; }
+.profile-table td:first-child { color: var(--muted); font-weight: 500; width: 45%; }
+.profile-table td:last-child  { font-weight: 600; }
+
+/* ===== PORTEFEUILLE ===== */
+.wallet-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  max-width: 360px;
+  margin-bottom: 1.25rem;
+}
+.wallet-balance {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0.5rem 0;
+}
+.wallet-currency {
+  font-size: 13px;
+  color: var(--muted);
+}
+.wallet-rows { margin-top: 1rem; }
+.wallet-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.45rem 0;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+}
+.wallet-row span { color: var(--muted); }
+.wallet-row strong { color: var(--text); }
+
+/* ===== CARTE ===== */
+.card-placeholder {
+  background: var(--card);
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  max-width: 400px;
+}
+.card-placeholder .icon { font-size: 3rem; margin-bottom: 1rem; }
+.card-placeholder h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+.card-placeholder p  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+.card-info {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+  max-width: 400px;
+}
+
+/* ===== NOTIFICATIONS ===== */
+.notif-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.notif-item {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  font-size: 13px;
+}
+.notif-item .notif-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+.notif-item .notif-msg  { flex: 1; color: var(--text); line-height: 1.5; }
+.notif-item .notif-date { font-size: 11px; color: var(--muted); margin-top: 0.25rem; }
+
+.notif-item.success { border-left: 3px solid var(--success); }
+.notif-item.warning { border-left: 3px solid #d97706; background: #fffbeb; }
+.notif-item.info    { border-left: 3px solid var(--primary); }
+
+.notif-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--danger);
+  color: white;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* ===== SÉCURITÉ ===== */
+.security-rows { display: flex; flex-direction: column; gap: 0; }
+.security-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.security-row:last-child { border-bottom: none; }
+.security-row span  { color: var(--muted); }
+.security-row strong{ color: var(--text); }
+
+/* ===== NOUVEAU PORTEFEUILLE ===== */
+.balance-display {
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.balance-amount {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--success);
+  margin-bottom: 0.5rem;
+}
+
+.balance-status {
+  font-size: 0.9rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.balance-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--bg);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.info-label {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.info-value {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.transaction-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s;
+}
+
+.transaction-item:last-child {
+  border-bottom: none;
+}
+
+.transaction-item:hover {
+  background-color: var(--bg);
+}
+
+.transaction-info {
+  flex: 1;
+}
+
+.transaction-title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.transaction-details {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.transaction-amount {
+  text-align: right;
+}
+
+.transaction-amount .amount {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.transaction-amount .amount.positive {
+  color: var(--success);
+}
+
+.transaction-amount .amount.negative {
+  color: var(--danger);
+}
+
+.transaction-amount .date {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 0.5rem 0;
+}
+
+.btn-full {
+  width: 100%;
+  justify-content: center;
+}
+
+/* ===== STYLES RESPONSIFS ===== */
+@media (max-width: 768px) {
+  .balance-actions {
+    flex-direction: column;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .transaction-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .transaction-amount {
+    text-align: left;
+    width: 100%;
+  }
+}

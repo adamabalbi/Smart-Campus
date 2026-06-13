@@ -8,8 +8,8 @@ const path = require("path");
 const WebSocket = require("ws");
 const connectDB = require("./config/db");
 
-// Service NFC
-const NFCService = require("./services/nfcService");
+// Service NFC — chargé paresseusement (require dans initializeNFC) car il dépend
+// de 'nfc-pcsc' (module natif) absent sur le cloud où ENABLE_NFC=false.
 const { setNFCService } = require("./controllers/nfcController");
 
 dotenv.config();
@@ -391,6 +391,7 @@ wss.on('connection', (ws) => {
 const initializeNFC = async () => {
   if (process.env.ENABLE_NFC === 'true') {
     try {
+      const NFCService = require("./services/nfcService");
       nfcService = new NFCService();
       await nfcService.initialize();
       setNFCService(nfcService);

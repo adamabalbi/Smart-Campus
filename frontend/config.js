@@ -13,7 +13,7 @@
 // ============================================================================
 (function () {
   // 👉 À adapter : URL du backend déployé sur Render (sans slash final)
-  const PROD_BACKEND_ORIGIN = "https://smart-campus-api.onrender.com";
+  const PROD_BACKEND_ORIGIN = "https://smart-campus-jgn5.onrender.com";
 
   const host = window.location.hostname;
   const isLocal = host === "localhost" || host === "127.0.0.1" || host === "";

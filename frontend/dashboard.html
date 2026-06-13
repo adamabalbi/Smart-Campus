@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -174,7 +174,7 @@
               id="studentSearch"
               placeholder="Rechercher par nom, prénom, email, matricule..."
               style="flex: 1; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;">
-            <button id="clearSearchBtn" class="btn-ghost" title="Effacer la recherche">✕</button>
+            <button id="clearSearchBtn" class="btn-ghost" title="Effacer la recherche"><i class="fa-solid fa-xmark"></i></button>
           </div>
           <div id="searchInfo" style="font-size: 12px; color: var(--muted); margin-top: 0.25rem; min-height: 16px;"></div>
         </div>
@@ -209,7 +209,7 @@
               <label>UID carte</label>
               <div style="display:flex;gap:.4rem">
                 <input type="text" id="cUid" required placeholder="ex: 04A1B2C3D4" style="flex:1;text-transform:uppercase">
-                <button type="button" id="scanCardBtn" class="btn-ghost" title="Scanner une carte physique sur le lecteur">📡 Scanner</button>
+                <button type="button" id="scanCardBtn" class="btn-ghost" title="Scanner une carte physique sur le lecteur"><i class="fa-solid fa-tower-broadcast"></i> Scanner</button>
                 <button type="button" id="generateUid" class="btn-ghost" title="Générer un UID simulé">⟳ Simuler</button>
               </div>
               <span id="scanStatus" style="font-size:11px;color:var(--muted)">8–14 caractères hexadécimaux</span>

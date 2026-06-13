@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -42,7 +42,7 @@
       <div class="card">
         <div class="card-title">1. Identifier la carte de l'étudiant</div>
         <div style="background: var(--violet-mist); border-left: 4px solid var(--primary); padding: 1rem; margin-bottom: 1rem;">
-          <strong>📡 Mode de fonctionnement :</strong><br>
+          <strong><i class="fa-solid fa-tower-broadcast"></i> Mode de fonctionnement :</strong><br>
           Cliquez sur <strong>Scanner</strong> puis posez la carte de l'étudiant sur le lecteur ACR122U.
           En l'absence de lecteur, vous pouvez aussi saisir manuellement l'UID imprimé sur la carte.
         </div>
@@ -53,10 +53,10 @@
             <span class="field-hint" id="scanHint">Cliquez sur Scanner ou saisissez l'UID (8-14 caractères)</span>
           </div>
           <div class="field" style="display: flex; align-items: end;">
-            <button id="scanCardBtn" class="btn-ghost">📡 Scanner</button>
+            <button id="scanCardBtn" class="btn-ghost"><i class="fa-solid fa-tower-broadcast"></i> Scanner</button>
           </div>
           <div class="field" style="display: flex; align-items: end;">
-            <button id="searchCardBtn" class="btn-primary">🔍 Rechercher</button>
+            <button id="searchCardBtn" class="btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Rechercher</button>
           </div>
         </div>
         <div id="searchCardMsg"></div>
@@ -93,7 +93,7 @@
       <div class="card" id="rechargeFormCard" style="display: none;">
         <div class="card-title">3. Effectuer la recharge</div>
         <div style="background: var(--violet-mist); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; margin-bottom: 1rem;">
-          <strong>📋 Procédure :</strong><br>
+          <strong><i class="fa-solid fa-clipboard-list"></i> Procédure :</strong><br>
           1. Saisissez le montant à recharger<br>
           2. L'étudiant saisit son code PIN dans le champ prévu<br>
           3. Validez la transaction
@@ -108,7 +108,7 @@
             <div class="field">
               <label>Code PIN de l'étudiant</label>
               <input type="password" id="studentPIN" maxlength="6" placeholder="••••••" required inputmode="numeric">
-              <span class="field-hint">⚠️ L'étudiant doit saisir lui-même son code PIN</span>
+              <span class="field-hint"><i class="fa-solid fa-triangle-exclamation"></i> L'étudiant doit saisir lui-même son code PIN</span>
             </div>
           </div>
 
@@ -131,7 +131,7 @@
 
       <!-- Reçu de recharge -->
       <div class="card" id="receiptCard" style="display: none;">
-        <div class="card-title">✅ Recharge effectuée avec succès</div>
+        <div class="card-title"><i class="fa-solid fa-circle-check"></i> Recharge effectuée avec succès</div>
         <div class="receipt">
           <div style="text-align: center; margin-bottom: 1rem;">
             <h3>Smart Campus - Reçu de recharge</h3>
@@ -170,7 +170,7 @@
           </div>
 
           <div style="text-align: center; margin-top: 1rem;">
-            <button id="printReceiptBtn" class="btn-ghost">🖨️ Imprimer</button>
+            <button id="printReceiptBtn" class="btn-ghost"><i class="fa-solid fa-print"></i> Imprimer</button>
             <button id="newRechargeBtn" class="btn-primary">Nouvelle recharge</button>
           </div>
         </div>

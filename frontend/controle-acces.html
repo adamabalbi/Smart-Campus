@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
   <link rel="stylesheet" href="service-payment.css">
   <style>
     .result-card { border-radius: 14px; padding: 2rem; text-align: center; margin: 1rem 0; }
@@ -19,12 +19,12 @@
 </head>
 <body>
   <div class="svc-container">
-    <h1 class="svc-title">🔐 Contrôle d'accès</h1>
+    <h1 class="svc-title"><i class="fa-solid fa-door-open"></i> Contrôle d'accès</h1>
     <p class="svc-subtitle">Vérification d'accès aux espaces du campus</p>
 
     <div style="display:flex; gap:0.6rem; justify-content:center; margin-bottom:1.5rem;">
-      <button class="btn" id="navCheck">✅ Vérification</button>
-      <button class="btn" id="navHistory">📋 Historique</button>
+      <button class="btn" id="navCheck"><i class="fa-solid fa-circle-check"></i> Vérification</button>
+      <button class="btn" id="navHistory"><i class="fa-solid fa-clock-rotate-left"></i> Historique</button>
     </div>
 
     <!-- Sélection de l'espace + scan -->
@@ -34,9 +34,9 @@
         <select id="spaceSelect" class="input" style="font-size:1.1rem;"></select>
       </div>
       <div class="svc-card" style="text-align:center;">
-        <div style="font-size:4rem;">💳</div>
+        <div style="font-size:4rem;"><i class="fa-solid fa-id-card"></i></div>
         <h2 style="margin:1rem 0;">Présentez la carte de l'étudiant</h2>
-        <button class="btn" id="scanBtn">📡 Scanner la carte</button>
+        <button class="btn" id="scanBtn"><i class="fa-solid fa-tower-broadcast"></i> Scanner la carte</button>
         <button class="btn btn-primary" id="checkBtn" style="display:none;">Vérifier accès</button>
         <div class="status-box" id="scanStatus" style="margin-top:1rem;">Choisissez l'espace puis scannez la carte.</div>
       </div>
@@ -93,13 +93,13 @@
         const data = await res.json();
         const active = (data.spaces||[]).filter(s => s.status === 'active');
         $("spaceSelect").innerHTML = active.map(s => `<option value="${s.key}">${s.label}</option>`).join("");
-      } catch(e) { setStatus("🔴 Impossible de charger les espaces", "#B85C5C"); }
+      } catch(e) { setStatus("Impossible de charger les espaces", "#B85C5C"); }
     }
 
     // Scan de la carte
     function scanCard() {
       if (scanActive) { scanActive=false; if(scanSocket) scanSocket.close(); setStatus("Scan annulé.","#6B7280"); return; }
-      setStatus("📡 Approchez la carte du lecteur...", "#4F6F52");
+      setStatus("Approchez la carte du lecteur...", "#4F6F52");
       scanActive = true;
       scanSocket = new WebSocket((window.SMART_CAMPUS_CONFIG && window.SMART_CAMPUS_CONFIG.WS_BASE_URL) || "ws://localhost:5000");
       scanSocket.onmessage = (ev) => {
@@ -108,13 +108,13 @@
           if (d.type === "cardDetected" && scanActive) {
             scanActive = false; scanSocket.close();
             currentUID = d.uid;
-            setStatus("✅ Carte lue : " + d.uid + " — cliquez sur Vérifier accès", "#5F8D4E");
+            setStatus("Carte lue : " + d.uid + " — cliquez sur Vérifier accès", "#5F8D4E");
             $("checkBtn").style.display = "inline-block";
           }
         } catch(e){}
       };
-      scanSocket.onerror = () => { setStatus("🔴 Lecteur NFC indisponible (ENABLE_NFC=true ?)", "#B85C5C"); scanActive=false; };
-      setTimeout(()=>{ if(scanActive){scanActive=false; if(scanSocket)scanSocket.close(); setStatus("⏱️ Délai dépassé.","#C9A227");} }, 20000);
+      scanSocket.onerror = () => { setStatus("Lecteur NFC indisponible (ENABLE_NFC=true ?)", "#B85C5C"); scanActive=false; };
+      setTimeout(()=>{ if(scanActive){scanActive=false; if(scanSocket)scanSocket.close(); setStatus("Délai dépassé.","#C9A227");} }, 20000);
     }
 
     // Vérification d'accès
@@ -132,14 +132,14 @@
         const data = await res.json();
         showResult(data, spaceKey);
       } catch(e) {
-        setStatus("🔴 Erreur de connexion au serveur", "#B85C5C");
+        setStatus("Erreur de connexion au serveur", "#B85C5C");
       }
     }
 
     function showResult(data, spaceKey) {
       const ok = data.authorized;
       $("resultCard").className = "result-card " + (ok ? "result-ok" : "result-ko");
-      $("resultIcon").textContent = ok ? "✅" : "⛔";
+      $("resultIcon").innerHTML = ok ? "<i class=\"fa-solid fa-circle-check\"></i>" : "<i class=\"fa-solid fa-ban\"></i>";
       $("resultDecision").textContent = ok ? "Accès autorisé" : "Accès refusé";
       $("resultReason").textContent = ok ? "" : data.message;
 
@@ -201,8 +201,8 @@
                   <td>${l.studentMatricule}</td>
                   <td>${l.spaceLabel || l.spaceKey || '—'}</td>
                   <td>${l.decision === 'authorized'
-                    ? '<span style="color:#5F8D4E; font-weight:600;">✅ Autorisé</span>'
-                    : '<span style="color:#B85C5C; font-weight:600;">⛔ Refusé</span>'}</td>
+                    ? '<span style="color:#5F8D4E; font-weight:600;">Autorisé</span>'
+                    : '<span style="color:#B85C5C; font-weight:600;">Refusé</span>'}</td>
                   <td style="font-size:11px;">${l.messageFr}</td>
                 </tr>
               `).join("")}

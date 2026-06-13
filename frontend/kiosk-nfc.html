@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
   <style>
     .kiosk-container {
@@ -191,7 +191,7 @@
 </head>
 <body>
   <div class="kiosk-container">
-    <h1 class="kiosk-title">🏫 Smart Campus</h1>
+    <h1 class="kiosk-title"><i class="fa-solid fa-building-columns"></i> Smart Campus</h1>
     <p class="kiosk-subtitle">Kiosque de Recharge NFC</p>
 
     <div class="nfc-reader-status">
@@ -201,7 +201,7 @@
 
     <!-- Étape 1: Attente de carte -->
     <div id="step-waiting" class="step-container">
-      <div class="step-icon card-animation">💳</div>
+      <div class="step-icon card-animation"><i class="fa-solid fa-credit-card"></i></div>
       <h2 class="step-title">Approchez votre carte étudiante</h2>
       <p class="step-description">
         Placez votre carte NFC près du lecteur pour commencer
@@ -210,7 +210,7 @@
 
     <!-- Étape 2: Validation PIN -->
     <div id="step-pin" class="step-container hidden">
-      <div class="step-icon">🔐</div>
+      <div class="step-icon"><i class="fa-solid fa-lock"></i></div>
       <h2 class="step-title">Saisissez votre code PIN</h2>
 
       <div class="student-info" id="studentInfo"></div>
@@ -234,7 +234,7 @@
 
     <!-- Étape 3: Choix du montant -->
     <div id="step-amount" class="step-container hidden">
-      <div class="step-icon">💰</div>
+      <div class="step-icon"><i class="fa-solid fa-wallet"></i></div>
       <h2 class="step-title">Choisissez le montant à recharger</h2>
 
       <div class="balance-display">
@@ -267,7 +267,7 @@
 
     <!-- Étape 4: Traitement -->
     <div id="step-processing" class="step-container hidden">
-      <div class="step-icon">⏳</div>
+      <div class="step-icon"><i class="fa-solid fa-hourglass-half"></i></div>
       <h2 class="step-title">Traitement en cours...</h2>
       <p class="step-description">
         Veuillez patienter pendant le traitement de votre recharge
@@ -276,7 +276,7 @@
 
     <!-- Étape 5: Succès -->
     <div id="step-success" class="step-container hidden">
-      <div class="step-icon success-animation">✅</div>
+      <div class="step-icon success-animation"><i class="fa-solid fa-circle-check"></i></div>
       <h2 class="step-title">Recharge effectuée avec succès !</h2>
 
       <div class="balance-display">
@@ -290,7 +290,7 @@
 
     <!-- Étape 6: Erreur -->
     <div id="step-error" class="step-container hidden">
-      <div class="step-icon">❌</div>
+      <div class="step-icon"><i class="fa-solid fa-circle-xmark"></i></div>
       <h2 class="step-title">Erreur de transaction</h2>
       <p id="errorMessage" class="step-description"></p>
 

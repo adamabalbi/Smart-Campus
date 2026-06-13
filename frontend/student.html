@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="student.css">
 </head>
@@ -81,7 +81,7 @@
       <!-- Solde actuel -->
       <div class="student-card">
         <div class="card-header">
-          <span class="card-icon">💰</span>
+          <span class="card-icon"><i class="fa-solid fa-wallet"></i></span>
           <h3>Solde actuel</h3>
         </div>
         <div class="balance-display">
@@ -89,15 +89,15 @@
           <div class="balance-status" id="walletStatus">—</div>
         </div>
         <div class="balance-actions">
-          <button class="btn-ghost" id="refreshBalanceBtn">🔄 Actualiser</button>
-          <button class="btn-primary" id="rechargeRequestBtn">➕ Demander une recharge</button>
+          <button class="btn-ghost" id="refreshBalanceBtn"><i class="fa-solid fa-arrows-rotate"></i> Actualiser</button>
+          <button class="btn-primary" id="rechargeRequestBtn"><i class="fa-solid fa-circle-plus"></i> Demander une recharge</button>
         </div>
       </div>
 
       <!-- Recharge rapide via borne -->
       <div class="student-card">
         <div class="card-header">
-          <span class="card-icon">🏧</span>
+          <span class="card-icon"><i class="fa-solid fa-money-bill-transfer"></i></span>
           <h3>Recharge via borne</h3>
         </div>
         <p style="color: var(--muted); margin-bottom: 1rem;">
@@ -117,13 +117,13 @@
             <span class="info-value">24h/24</span>
           </div>
         </div>
-        <button class="btn-primary btn-full" id="findKioskBtn">📍 Localiser les bornes</button>
+        <button class="btn-primary btn-full" id="findKioskBtn"><i class="fa-solid fa-location-dot"></i> Localiser les bornes</button>
       </div>
 
       <!-- Historique des transactions -->
       <div class="student-card">
         <div class="card-header">
-          <span class="card-icon">📊</span>
+          <span class="card-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
           <h3>Historique des transactions</h3>
         </div>
 
@@ -151,16 +151,16 @@
 
         <!-- Pagination -->
         <div class="pagination" id="transactionsPagination" style="display: none;">
-          <button id="prevPageBtn" class="btn-ghost">← Précédent</button>
+          <button id="prevPageBtn" class="btn-ghost"><i class="fa-solid fa-chevron-left"></i> Précédent</button>
           <span id="pageInfo">Page 1 sur 1</span>
-          <button id="nextPageBtn" class="btn-ghost">Suivant →</button>
+          <button id="nextPageBtn" class="btn-ghost">Suivant <i class="fa-solid fa-chevron-right"></i></button>
         </div>
       </div>
 
       <!-- Plafonds et limites -->
       <div class="student-card">
         <div class="card-header">
-          <span class="card-icon">⚖️</span>
+          <span class="card-icon"><i class="fa-solid fa-scale-balanced"></i></span>
           <h3>Plafonds et limites</h3>
         </div>
         <div class="info-grid">

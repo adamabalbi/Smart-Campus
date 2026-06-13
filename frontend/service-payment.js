@@ -47,7 +47,7 @@ function blockService() {
   container.innerHTML = `
     <h1 class="svc-title">${CFG.title}</h1>
     <div class="svc-card" style="text-align:center; padding:3rem 1.5rem;">
-      <div style="font-size:4rem;">🚫</div>
+      <div style="font-size:4rem;"><i class="fa-solid fa-ban"></i></div>
       <h2 style="margin:1rem 0;">Service indisponible</h2>
       <p style="opacity:0.9;">Ce service est actuellement désactivé par l'administration.<br>Veuillez réessayer plus tard.</p>
     </div>`;
@@ -95,7 +95,7 @@ function scanCard() {
     setStatus("Scan annulé.", "#666");
     return;
   }
-  setStatus("📡 Approchez la carte de l'étudiant du lecteur...", "#2563eb");
+  setStatus("Approchez la carte de l'étudiant du lecteur...", "#4F6F52");
   scanActive = true;
   scanSocket = new WebSocket((window.SMART_CAMPUS_CONFIG && window.SMART_CAMPUS_CONFIG.WS_BASE_URL) || "ws://localhost:5000");
 
@@ -110,21 +110,21 @@ function scanCard() {
     } catch (err) { console.error(err); }
   };
   scanSocket.onerror = () => {
-    setStatus("🔴 Lecteur NFC indisponible (serveur lancé avec ENABLE_NFC=true ?)", "#ef4444");
+    setStatus("Lecteur NFC indisponible (serveur lancé avec ENABLE_NFC=true ?)", "#B85C5C");
     scanActive = false;
   };
   setTimeout(() => {
     if (scanActive) {
       scanActive = false;
       if (scanSocket) scanSocket.close();
-      setStatus("⏱️ Délai dépassé. Cliquez à nouveau sur Scanner.", "#f59e0b");
+      setStatus("Délai dépassé. Cliquez à nouveau sur Scanner.", "#C9A227");
     }
   }, 20000);
 }
 
 // --- Identification de l'étudiant via /api/nfc/auth ---
 async function identifyStudent(uid) {
-  setStatus("📖 Lecture de la carte...", "#2563eb");
+  setStatus("Lecture de la carte...", "#4F6F52");
   try {
     const res = await fetch(`${API}/nfc/auth`, {
       method: "POST",
@@ -133,7 +133,7 @@ async function identifyStudent(uid) {
     });
     const data = await res.json();
     if (!data.success) {
-      setStatus("❌ " + (data.message || "Carte non reconnue"), "#ef4444");
+      setStatus("" + (data.message || "Carte non reconnue"), "#B85C5C");
       return;
     }
     currentUID = uid;
@@ -145,10 +145,10 @@ async function identifyStudent(uid) {
     $("stMatricule").textContent = currentStudent.matricule;
     $("stBalance").textContent = currentWallet ? fmt(currentWallet.balance) : "—";
 
-    setStatus("✅ Étudiant identifié : " + currentStudent.prenom, "#16a34a");
+    setStatus("Étudiant identifié : " + currentStudent.prenom, "#5F8D4E");
     showStep("step-pay");
   } catch (err) {
-    setStatus("🔴 Erreur de connexion au serveur", "#ef4444");
+    setStatus("Erreur de connexion au serveur", "#B85C5C");
   }
 }
 

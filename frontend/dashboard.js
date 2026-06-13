@@ -298,9 +298,9 @@ async function loadAudit() {
   const { page, pages, total } = data.pagination;
   const pagEl = document.getElementById("auditPagination");
   pagEl.innerHTML = pages > 1 ? `
-    <button class="btn-sm btn-ghost" id="auditPrevBtn" ${page <= 1 ? "disabled" : ""}>← Précédent</button>
+    <button class="btn-sm btn-ghost" id="auditPrevBtn" ${page <= 1 ? "disabled" : ""}>Précédent</button>
     <span style="font-size:13px;color:var(--muted)">Page ${page} / ${pages} (${total} événements)</span>
-    <button class="btn-sm btn-ghost" id="auditNextBtn" ${page >= pages ? "disabled" : ""}>Suivant →</button>
+    <button class="btn-sm btn-ghost" id="auditNextBtn" ${page >= pages ? "disabled" : ""}>Suivant </button>
   ` : `<span style="font-size:13px;color:var(--muted)">${total} événement(s)</span>`;
 
   document.getElementById("auditPrevBtn")?.addEventListener("click", () => { auditPage--; loadAudit(); });
@@ -721,7 +721,7 @@ async function loadCards() {
         ${data.cards.map(c => {
           const pinBlocked = c.pinBlockedUntil && new Date(c.pinBlockedUntil) > new Date();
           const pinStatus  = pinBlocked
-            ? `<span style="color:var(--danger);font-size:12px">🔒 Bloqué</span>`
+            ? `<span style="color:var(--danger);font-size:12px">Bloqué</span>`
             : `<span style="font-size:12px">${c.pinAttempts}/3 essais</span>`;
 
           return `<tr>
@@ -782,13 +782,13 @@ document.getElementById("scanCardBtn")?.addEventListener("click", () => {
   }
 
   const wsUrl = (window.SMART_CAMPUS_CONFIG && window.SMART_CAMPUS_CONFIG.WS_BASE_URL) || "ws://localhost:5000";
-  setScanStatus("📡 Approchez la carte du lecteur ACR122U...", "var(--primary)");
+  setScanStatus("Approchez la carte du lecteur ACR122U...", "var(--primary)");
   scanActive = true;
 
   scanSocket = new WebSocket(wsUrl);
 
   scanSocket.onopen = () => {
-    console.log("🔗 WebSocket scan connecté");
+    console.log("WebSocket scan connecté");
   };
 
   scanSocket.onmessage = (event) => {
@@ -796,7 +796,7 @@ document.getElementById("scanCardBtn")?.addEventListener("click", () => {
       const data = JSON.parse(event.data);
       if (data.type === "cardDetected" && scanActive) {
         document.getElementById("cUid").value = data.uid;
-        setScanStatus(`✅ Carte détectée : ${data.uid}`, "#22c55e");
+        setScanStatus(`Carte détectée : ${data.uid}`, "#22c55e");
         scanActive = false;
         scanSocket.close();
       }
@@ -806,12 +806,12 @@ document.getElementById("scanCardBtn")?.addEventListener("click", () => {
   };
 
   scanSocket.onerror = () => {
-    setScanStatus("🔴 Lecteur NFC indisponible (serveur lancé avec ENABLE_NFC=true ?)", "#ef4444");
+    setScanStatus("Lecteur NFC indisponible (serveur lancé avec ENABLE_NFC=true ?)", "#B85C5C");
     scanActive = false;
   };
 
   scanSocket.onclose = () => {
-    console.log("📡 WebSocket scan fermé");
+    console.log("WebSocket scan fermé");
   };
 
   // Timeout de sécurité : 20 secondes
@@ -819,7 +819,7 @@ document.getElementById("scanCardBtn")?.addEventListener("click", () => {
     if (scanActive) {
       scanActive = false;
       if (scanSocket) scanSocket.close();
-      setScanStatus("⏱️ Délai dépassé. Cliquez à nouveau sur Scanner.", "#f59e0b");
+      setScanStatus("Délai dépassé. Cliquez à nouveau sur Scanner.", "#C9A227");
     }
   }, 20000);
 });
@@ -895,9 +895,9 @@ document.getElementById("verifyPinBtn")?.addEventListener("click", async () => {
   });
 
   if (ok) {
-    el.innerHTML = `<div class="alert alert-success" style="margin:0">✅ PIN correct — accès autorisé.</div>`;
+    el.innerHTML = `<div class="alert alert-success" style="margin:0">PIN correct — accès autorisé.</div>`;
   } else {
-    el.innerHTML = `<div class="alert alert-error" style="margin:0">❌ ${data.message}${data.pinAttempts ? ` (${data.pinAttempts}/3 tentatives)` : ""}</div>`;
+    el.innerHTML = `<div class="alert alert-error" style="margin:0">${data.message}${data.pinAttempts ? ` (${data.pinAttempts}/3 tentatives)` : ""}</div>`;
   }
 });
 
@@ -1026,7 +1026,7 @@ async function deleteUser(userId, nom) {
 // =============================================================
 let editCardId = null;
 
-// Preset selector → affiche/cache l'input date
+// Preset selector affiche/cache l'input date
 document.getElementById("editCardExpiryPreset")?.addEventListener("change", (e) => {
   const input = document.getElementById("editCardExpiry");
   if (e.target.value === "custom") {

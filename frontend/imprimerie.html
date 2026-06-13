@@ -7,20 +7,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
   <link rel="stylesheet" href="service-payment.css">
 </head>
 <body>
   <div class="svc-container">
-    <h1 class="svc-title" id="pageTitle">🖨️ Imprimerie</h1>
+    <h1 class="svc-title" id="pageTitle"><i class="fa-solid fa-print"></i> Imprimerie</h1>
     <p class="svc-subtitle">Paiement des impressions, photocopies et scans</p>
 
     <!-- Étape 1 : Scan -->
     <div id="step-scan" class="svc-step">
       <div class="svc-card" style="text-align:center;">
-        <div style="font-size:4rem;">💳</div>
+        <div style="font-size:4rem;"><i class="fa-solid fa-credit-card"></i></div>
         <h2 style="margin:1rem 0;">Présentez la carte de l'étudiant</h2>
-        <button class="btn" id="scanBtn">📡 Scanner la carte</button>
+        <button class="btn" id="scanBtn"><i class="fa-solid fa-tower-broadcast"></i> Scanner la carte</button>
         <div class="status-box" id="scanStatus" style="margin-top:1rem;">Cliquez sur Scanner et posez la carte.</div>
       </div>
     </div>
@@ -28,7 +28,7 @@
     <!-- Étape 2 : Paiement -->
     <div id="step-pay" class="svc-step hidden">
       <div class="svc-card">
-        <h3 style="margin-bottom:0.75rem;">👤 Étudiant</h3>
+        <h3 style="margin-bottom:0.75rem;"><i class="fa-solid fa-user"></i> Étudiant</h3>
         <div class="svc-info-row"><span>UID carte</span><strong id="stUID">—</strong></div>
         <div class="svc-info-row"><span>Nom</span><strong id="stName">—</strong></div>
         <div class="svc-info-row"><span>Matricule</span><strong id="stMatricule">—</strong></div>
@@ -36,7 +36,7 @@
       </div>
 
       <div class="svc-card">
-        <h3 style="margin-bottom:0.75rem;">🖨️ Type de service</h3>
+        <h3 style="margin-bottom:0.75rem;"><i class="fa-solid fa-print"></i> Type de service</h3>
         <div id="serviceList"></div>
 
         <div id="qtyRow" class="hidden" style="margin-top:1rem;">
@@ -60,11 +60,11 @@
 
     <!-- Étape 3 : Reçu -->
     <div id="step-receipt" class="svc-step hidden">
-      <div class="success-icon">✅</div>
+      <div class="success-icon"><i class="fa-solid fa-circle-check"></i></div>
       <h2 style="text-align:center;">Paiement effectué</h2>
       <div class="receipt-box" id="receiptBox">
         <div class="rc-head">
-          <div style="font-size:1.2rem; font-weight:700;">🏫 Smart Campus</div>
+          <div style="font-size:1.2rem; font-weight:700;"><i class="fa-solid fa-building-columns"></i> Smart Campus</div>
           <div style="font-size:0.85rem; color:#6B7280;">Reçu de paiement</div>
         </div>
         <div class="rc-row"><span>N° reçu</span><strong id="rcNumber">—</strong></div>
@@ -80,7 +80,7 @@
         </div>
       </div>
       <div style="text-align:center; margin-top:1rem;">
-        <button class="btn" onclick="printReceipt()">🖨️ Imprimer</button>
+        <button class="btn" onclick="printReceipt()"><i class="fa-solid fa-print"></i> Imprimer</button>
         <button class="btn btn-primary" onclick="reset()">Nouveau paiement</button>
       </div>
     </div>
@@ -89,7 +89,7 @@
   <script>
     window.SERVICE_CONFIG = {
       service: 'imprimerie',
-      title: '🖨️ Imprimerie',
+      title: '<i class="fa-solid fa-print"></i> Imprimerie',
       mode: 'unit',
       qtyLabel: 'Nombre de pages',
       unitSuffix: 'page',

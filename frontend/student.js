@@ -96,7 +96,7 @@ function renderSummary(user, student, card, wallet) {
 
   document.getElementById("summaryCard").innerHTML = `
     <div class="id-card-head">
-      <span class="id-card-inst">🏫 Smart Campus · Carte Étudiant</span>
+      <span class="id-card-inst"><i class="fa-solid fa-building-columns"></i> Smart Campus · Carte Étudiant</span>
       <span class="id-card-chip"></span>
     </div>
     <div class="id-card-identity">
@@ -147,7 +147,7 @@ function renderProfile(user, student) {
       <tr><td>Filière</td><td>${student?.filiere || "—"}</td></tr>
       <tr><td>Niveau</td><td>${student?.niveau || "—"}</td></tr>
       <tr><td>Département</td><td>${student?.departement || na}</td></tr>
-      <tr><td>Statut</td><td>${student?.status === "active" ? "✅ Actif" : student?.status || "—"}</td></tr>
+      <tr><td>Statut</td><td>${student?.status === "active" ? "Actif" : student?.status || "—"}</td></tr>
     </table>`;
 
   document.getElementById("inputTelephone").value = student?.telephone || "";
@@ -211,7 +211,7 @@ function renderWallet(wallet) {
 document.getElementById("refreshBalanceBtn")?.addEventListener("click", async () => {
   const btn = document.getElementById("refreshBalanceBtn");
   const originalText = btn.textContent;
-  btn.textContent = "🔄 Actualisation...";
+  btn.textContent = "Actualisation...";
   btn.disabled = true;
 
   try {
@@ -293,7 +293,7 @@ function renderTransactionItem(transaction) {
     api: "Système"
   };
 
-  // Libellés des services de paiement (clé technique → nom affiché)
+  // Libellés des services de paiement (clé technique nom affiché)
   const serviceLabels = {
     cantine: "Cantine",
     bibliotheque: "Bibliothèque",
@@ -382,7 +382,7 @@ function renderCard(card, cardApplication) {
     if (cardApplication && cardApplication.status === "pending") {
       el.innerHTML = `
         <div class="card-placeholder">
-          <div class="icon">⏳</div>
+          <div class="icon"></div>
           <h3>Inscription en cours de traitement</h3>
           <p>Votre dossier d'inscription a été soumis le <strong>${new Date(cardApplication.createdAt).toLocaleDateString("fr-FR")}</strong>.<br>
           Le service de la scolarité va examiner votre inscription. Vous recevrez un email dès qu'elle sera validée.</p>
@@ -393,7 +393,7 @@ function renderCard(card, cardApplication) {
     if (cardApplication && cardApplication.status === "rejected") {
       el.innerHTML = `
         <div class="card-placeholder" style="border-color:#fecaca">
-          <div class="icon">❌</div>
+          <div class="icon"></div>
           <h3>Inscription refusée</h3>
           <p>${cardApplication.rejectionReason || "Contactez le service de la scolarité pour plus d'informations."}</p>
         </div>`;
@@ -403,7 +403,7 @@ function renderCard(card, cardApplication) {
     // ── Formulaire d'inscription scolarité ────────────────────────────────
     el.innerHTML = `
       <div class="card-placeholder" style="margin-bottom:1.25rem">
-        <div class="icon">🎓</div>
+        <div class="icon"><i class="fa-solid fa-user-graduate"></i></div>
         <h3>Inscription au service de scolarité</h3>
         <p>Votre compte a été validé. Complétez ce formulaire pour finaliser votre inscription et obtenir votre carte étudiant.</p>
       </div>
@@ -475,7 +475,7 @@ function renderCard(card, cardApplication) {
 
   const pinBanner = card.mustChangePIN
     ? `<div class="banner" style="margin-bottom:1rem">
-        ⚠️ Vous devez changer votre PIN temporaire avant d'utiliser votre carte.
+        Vous devez changer votre PIN temporaire avant d'utiliser votre carte.
        </div>`
     : "";
 
@@ -486,15 +486,15 @@ function renderCard(card, cardApplication) {
         <tr><td>Numéro de carte</td><td><strong>${card.cardNumber}</strong></td></tr>
         <tr><td>UID</td><td><code>${card.uid}</code></td></tr>
         <tr><td>Type</td><td>${card.type}</td></tr>
-        <tr><td>Statut</td><td>${card.status === "active" ? "✅ Active" : card.status}</td></tr>
-        <tr><td>PIN temporaire</td><td>${card.mustChangePIN ? "⚠️ À changer" : "✅ Modifié"}</td></tr>
+        <tr><td>Statut</td><td>${card.status === "active" ? "Active" : card.status}</td></tr>
+        <tr><td>PIN temporaire</td><td>${card.mustChangePIN ? "À changer" : "Modifié"}</td></tr>
         <tr><td>Émise le</td><td>${new Date(card.issuedAt).toLocaleDateString("fr-FR")}</td></tr>
         <tr><td>Expire le</td><td>${card.expiresAt ? new Date(card.expiresAt).toLocaleDateString("fr-FR") : "Non définie"}</td></tr>
       </table>
     </div>
 
     <div class="card" style="max-width:420px">
-      <div class="card-title">${card.mustChangePIN ? "⚠️ Changer mon PIN (obligatoire)" : "Changer mon PIN"}</div>
+      <div class="card-title">${card.mustChangePIN ? "Changer mon PIN (obligatoire)" : "Changer mon PIN"}</div>
       <form id="formChangePIN">
         <div class="field">
           <label>PIN actuel</label>
@@ -547,7 +547,7 @@ function renderCard(card, cardApplication) {
 // =============================================================
 // NOTIFICATIONS
 // =============================================================
-const notifIcons = { success: "✅", warning: "⚠️", info: "ℹ️" };
+const notifIcons = { success: "", warning: "", info: "ℹ" };
 
 async function loadNotifications() {
   const el = document.getElementById("notificationsContent");
@@ -586,7 +586,7 @@ function renderSecurity(user) {
     <div class="security-rows">
       <div class="security-row">
         <span>Statut du compte</span>
-        <strong>${user.status === "active" ? "✅ Actif" : user.status}</strong>
+        <strong>${user.status === "active" ? "Actif" : user.status}</strong>
       </div>
       <div class="security-row">
         <span>Dernière connexion</span>
@@ -594,7 +594,7 @@ function renderSecurity(user) {
       </div>
       <div class="security-row">
         <span>Mot de passe temporaire</span>
-        <strong>${user.mustChangePassword ? "⚠️ À changer" : "✅ Modifié"}</strong>
+        <strong>${user.mustChangePassword ? "À changer" : "Modifié"}</strong>
       </div>
     </div>`;
 }

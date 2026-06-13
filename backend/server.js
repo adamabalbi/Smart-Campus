@@ -59,7 +59,7 @@ const strictCSP = helmet.contentSecurityPolicy({
     defaultSrc: ["'self'"],
     scriptSrc: ["'self'"],
     styleSrc: ["'self'", "https:", "'unsafe-inline'"],
-    fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+    fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "data:"],
     imgSrc: ["'self'", "data:"],
     connectSrc: ["'self'", "ws:", "wss:"],
     objectSrc: ["'none'"],
@@ -107,6 +107,7 @@ app.get("/kiosk-v2", strictCSP, (req, res) => {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -178,7 +179,7 @@ app.get("/kiosk-v2", strictCSP, (req, res) => {
 </head>
 <body>
   <div class="container">
-    <h1 class="title">🏫 Smart Campus</h1>
+    <h1 class="title"><i class="fa-solid fa-building-columns"></i> Smart Campus</h1>
     <p class="subtitle">Kiosque de Recharge NFC</p>
 
     <div class="status">
@@ -188,7 +189,7 @@ app.get("/kiosk-v2", strictCSP, (req, res) => {
 
     <!-- Étape 0: Sélection de la borne -->
     <div id="selectKiosk" class="step active">
-      <div style="font-size: 4rem; margin-bottom: 1rem;">📍</div>
+      <div style="font-size: 4rem; margin-bottom: 1rem;"><i class="fa-solid fa-location-dot"></i></div>
       <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Sélectionnez votre borne</h2>
       <p style="font-size: 1rem; opacity: 0.9; margin-bottom: 1.5rem;">
         Choisissez l'emplacement où vous effectuez votre recharge
@@ -199,33 +200,33 @@ app.get("/kiosk-v2", strictCSP, (req, res) => {
     <!-- Étape 1: Attente -->
     <div id="waiting" class="step hidden">
       <div id="selectedKioskBadge" style="margin-bottom:1rem; font-size:0.95rem; opacity:0.9;"></div>
-      <div class="card-icon">💳</div>
+      <div class="card-icon"><i class="fa-solid fa-credit-card"></i></div>
       <h2 style="font-size: 1.8rem; margin-bottom: 1rem;">Approchez votre carte NFC</h2>
       <p style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 1rem;">
         Placez votre carte près du lecteur ACR122U
       </p>
 
       <div id="nfcStatus" style="margin: 1rem 0; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 10px;">
-        <p id="nfcStatusText">🔗 Connexion au lecteur NFC...</p>
+        <p id="nfcStatusText">Connexion au lecteur NFC...</p>
       </div>
 
       <div id="testButtons" style="margin-top: 2rem;">
         <p style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 1rem;">Mode Test (Développement):</p>
         <button class="btn" data-action="simulateCard" data-uid="a89fb4ef" data-name="Jean Dupont">
-          🧪 Test Carte 1 (Jean)
+          <i class="fa-solid fa-flask"></i> Test Carte 1 (Jean)
         </button>
         <button class="btn" data-action="simulateCard" data-uid="b8d4e0ef" data-name="Marie Martin">
-          🧪 Test Carte 2 (Marie)
+          <i class="fa-solid fa-flask"></i> Test Carte 2 (Marie)
         </button>
         <button class="btn" data-action="simulateCard" data-uid="b840cdef" data-name="Test Admin">
-          🧪 Test Carte 3 (Admin)
+          <i class="fa-solid fa-flask"></i> Test Carte 3 (Admin)
         </button>
       </div>
     </div>
 
     <!-- Étape 2: PIN -->
     <div id="pin" class="step hidden">
-      <div style="font-size: 4rem; margin-bottom: 1rem;">🔐</div>
+      <div style="font-size: 4rem; margin-bottom: 1rem;"><i class="fa-solid fa-lock"></i></div>
       <h2>Saisissez votre code PIN</h2>
 
       <div id="studentInfo" class="student-info"></div>
@@ -235,8 +236,8 @@ app.get("/kiosk-v2", strictCSP, (req, res) => {
       </div>
 
       <div style="margin-top: 2rem;">
-        <button class="btn" data-action="validatePin">✓ Valider PIN</button>
-        <button class="btn" data-action="restart">✗ Annuler</button>
+        <button class="btn" data-action="validatePin"><i class="fa-solid fa-check"></i> Valider PIN</button>
+        <button class="btn" data-action="restart"><i class="fa-solid fa-xmark"></i> Annuler</button>
       </div>
 
       <div id="pinError" class="error" style="display: none;"></div>
@@ -244,7 +245,7 @@ app.get("/kiosk-v2", strictCSP, (req, res) => {
 
     <!-- Étape 3: Montant -->
     <div id="amount" class="step hidden">
-      <div style="font-size: 4rem; margin-bottom: 1rem;">💰</div>
+      <div style="font-size: 4rem; margin-bottom: 1rem;"><i class="fa-solid fa-wallet"></i></div>
       <h2>Choisissez le montant à recharger</h2>
 
       <div class="balance">
@@ -264,27 +265,27 @@ app.get("/kiosk-v2", strictCSP, (req, res) => {
       <div style="margin-top: 2rem;">
         <button class="btn" data-action="confirmRecharge" id="confirmBtn" disabled
                 style="opacity: 0.5; cursor: not-allowed;">
-          ✓ Confirmer la recharge
+          <i class="fa-solid fa-check"></i> Confirmer la recharge
         </button>
-        <button class="btn" data-action="restart">✗ Annuler</button>
+        <button class="btn" data-action="restart"><i class="fa-solid fa-xmark"></i> Annuler</button>
       </div>
     </div>
 
     <!-- Étape 4: Traitement -->
     <div id="processing" class="step hidden">
-      <div class="processing-icon">⏳</div>
+      <div class="processing-icon"><i class="fa-solid fa-hourglass-half"></i></div>
       <h2>Traitement en cours...</h2>
       <p style="opacity: 0.8; margin-top: 1rem;">Veuillez patienter</p>
     </div>
 
     <!-- Étape 5: Succès + reçu -->
     <div id="success" class="step hidden">
-      <div class="success-icon">✅</div>
+      <div class="success-icon"><i class="fa-solid fa-circle-check"></i></div>
       <h2>Recharge effectuée avec succès !</h2>
 
       <div id="receiptBox" style="background:#fff; color:#1F2933; border-radius:12px; padding:1.5rem; max-width:420px; margin:1.5rem auto; text-align:left; font-size:14px; box-shadow:0 8px 24px rgba(0,0,0,0.25);">
         <div style="text-align:center; border-bottom:2px dashed #E6E1D8; padding-bottom:0.75rem; margin-bottom:0.75rem;">
-          <div style="font-size:1.2rem; font-weight:700;">🏫 Smart Campus</div>
+          <div style="font-size:1.2rem; font-weight:700;"><i class="fa-solid fa-building-columns"></i> Smart Campus</div>
           <div style="font-size:0.85rem; color:#6B7280;">Reçu de recharge</div>
         </div>
         <div style="display:flex; justify-content:space-between; margin:0.35rem 0;"><span>N° reçu</span><strong id="rcNumber">—</strong></div>
@@ -300,19 +301,19 @@ app.get("/kiosk-v2", strictCSP, (req, res) => {
       </div>
 
       <div style="margin-top: 1rem;">
-        <button class="btn" data-action="printReceipt">🖨️ Imprimer le reçu</button>
-        <button class="btn" data-action="restart">🔄 Nouvelle transaction</button>
+        <button class="btn" data-action="printReceipt"><i class="fa-solid fa-print"></i> Imprimer le reçu</button>
+        <button class="btn" data-action="restart"><i class="fa-solid fa-arrows-rotate"></i> Nouvelle transaction</button>
       </div>
     </div>
 
     <!-- Étape 6: Erreur -->
     <div id="error" class="step hidden">
-      <div style="font-size: 4rem; color: #B85C5C; margin-bottom: 1rem;">❌</div>
+      <div style="font-size: 4rem; color: #B85C5C; margin-bottom: 1rem;"><i class="fa-solid fa-circle-xmark"></i></div>
       <h2>Erreur de transaction</h2>
       <div id="errorMessage" style="margin: 1.5rem 0; padding: 1rem; background: rgba(255,107,107,0.2); border-radius: 8px;"></div>
 
       <div style="margin-top: 2rem;">
-        <button class="btn" data-action="restart">🔄 Réessayer</button>
+        <button class="btn" data-action="restart"><i class="fa-solid fa-arrows-rotate"></i> Réessayer</button>
       </div>
     </div>
   </div>

@@ -85,14 +85,14 @@ document.addEventListener('DOMContentLoaded', function() {
   const searchBtn = document.getElementById("searchCardBtn");
   const cardUIDInput = document.getElementById("cardUID");
 
-  console.log("🔧 DEBUG: Bouton recherche:", searchBtn);
-  console.log("🔧 DEBUG: Champ UID:", cardUIDInput);
+  console.log("DEBUG: Bouton recherche:", searchBtn);
+  console.log("DEBUG: Champ UID:", cardUIDInput);
 
   if (searchBtn) {
     searchBtn.addEventListener("click", searchCard);
-    console.log("✅ Event listener attaché au bouton");
+    console.log("Event listener attaché au bouton");
   } else {
-    console.error("❌ Bouton searchCardBtn non trouvé");
+    console.error("Bouton searchCardBtn non trouvé");
   }
 
   if (cardUIDInput) {
@@ -126,7 +126,7 @@ function scanCard() {
     return;
   }
 
-  setScanHint("📡 Approchez la carte de l'étudiant du lecteur ACR122U...", "var(--primary)");
+  setScanHint("Approchez la carte de l'étudiant du lecteur ACR122U...", "var(--primary)");
   scanActive = true;
 
   scanSocket = new WebSocket((window.SMART_CAMPUS_CONFIG && window.SMART_CAMPUS_CONFIG.WS_BASE_URL) || "ws://localhost:5000");
@@ -136,7 +136,7 @@ function scanCard() {
       const data = JSON.parse(event.data);
       if (data.type === "cardDetected" && scanActive) {
         document.getElementById("cardUID").value = data.uid;
-        setScanHint(`✅ Carte détectée : ${data.uid}`, "#22c55e");
+        setScanHint(`Carte détectée : ${data.uid}`, "#22c55e");
         scanActive = false;
         scanSocket.close();
         // Lancer automatiquement la recherche de la carte
@@ -148,7 +148,7 @@ function scanCard() {
   };
 
   scanSocket.onerror = () => {
-    setScanHint("🔴 Lecteur NFC indisponible (serveur lancé avec ENABLE_NFC=true ?)", "#ef4444");
+    setScanHint("Lecteur NFC indisponible (serveur lancé avec ENABLE_NFC=true ?)", "#B85C5C");
     scanActive = false;
   };
 
@@ -157,15 +157,15 @@ function scanCard() {
     if (scanActive) {
       scanActive = false;
       if (scanSocket) scanSocket.close();
-      setScanHint("⏱️ Délai dépassé. Cliquez à nouveau sur Scanner.", "#f59e0b");
+      setScanHint("Délai dépassé. Cliquez à nouveau sur Scanner.", "#C9A227");
     }
   }, 20000);
 }
 
 async function searchCard() {
-  console.log("🔍 DEBUG: Fonction searchCard() appelée");
+  console.log("DEBUG: Fonction searchCard() appelée");
   const uid = document.getElementById("cardUID").value.trim().toUpperCase();
-  console.log("🔍 DEBUG: UID saisi:", uid);
+  console.log("DEBUG: UID saisi:", uid);
 
   // Validation de l'UID
   if (!uid) {
@@ -184,7 +184,7 @@ async function searchCard() {
   const btn = document.getElementById("searchCardBtn");
   const originalText = btn.textContent;
   btn.disabled = true;
-  btn.textContent = "🔄 Recherche...";
+  btn.textContent = "Recherche...";
 
   const { ok, data } = await req(`/wallets/card/${uid}`);
 
@@ -203,7 +203,7 @@ async function searchCard() {
 
   // Afficher les informations de l'étudiant
   displayStudentInfo();
-  showMsg("searchCardMsg", "✅ Carte trouvée avec succès !", "success");
+  showMsg("searchCardMsg", "Carte trouvée avec succès !", "success");
 }
 
 function displayStudentInfo() {
@@ -387,8 +387,8 @@ async function loadHistory() {
         <tbody>
           ${transactions.map(t => {
             const canalBadge = t.channel === 'kiosk'
-              ? '<span class="badge badge-active">🏪 Borne</span>'
-              : '<span class="badge badge-inactive">👤 Agent</span>';
+              ? '<span class="badge badge-active"><i class="fa-solid fa-tower-cell"></i> Borne</span>'
+              : '<span class="badge badge-inactive"><i class="fa-solid fa-user"></i> Agent</span>';
             return `
             <tr>
               <td style="font-size:12px">${formatDateTime(t.createdAt)}</td>

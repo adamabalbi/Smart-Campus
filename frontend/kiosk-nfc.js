@@ -13,7 +13,7 @@ let currentStep = 'waiting';
 
 // Initialisation du kiosque
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log('🏪 Initialisation du kiosque NFC...');
+  console.log('Initialisation du kiosque NFC...');
   await checkReaderStatus();
   startCardDetection();
 });
@@ -48,7 +48,7 @@ function updateReaderStatus(connected, message) {
 // Simulation de détection de carte (à remplacer par vraie intégration)
 function startCardDetection() {
   // Pour test : simulation d'une carte toutes les 30 secondes
-  console.log('👀 Surveillance des cartes activée');
+  console.log('Surveillance des cartes activée');
 
   // En production, ceci sera remplacé par les événements du service NFC
   // Exemple d'intégration WebSocket :
@@ -71,7 +71,7 @@ function startCardDetection() {
 // Bouton de test pour développement
 function addTestButton() {
   const testBtn = document.createElement('button');
-  testBtn.textContent = '🧪 Test Carte (Dev)';
+  testBtn.textContent = 'Test Carte (Dev)';
   testBtn.className = 'kiosk-btn';
   testBtn.style.position = 'fixed';
   testBtn.style.top = '20px';
@@ -84,11 +84,11 @@ function addTestButton() {
 // Gestion de la détection d'une carte
 async function handleCardDetected(uid) {
   if (transactionInProgress) {
-    console.log('⚠️ Transaction en cours, carte ignorée');
+    console.log('Transaction en cours, carte ignorée');
     return;
   }
 
-  console.log('📱 Carte détectée:', uid);
+  console.log('Carte détectée:', uid);
 
   try {
     // Authentification de la carte
@@ -125,7 +125,7 @@ async function handleCardDetected(uid) {
 
 // Affichage de l'étape validation PIN
 function showPinStep() {
-  console.log('🔐 Affichage étape PIN');
+  console.log('Affichage étape PIN');
   transactionInProgress = true;
   currentStep = 'pin';
 
@@ -207,7 +207,7 @@ function clearPinError() {
 
 // Affichage de l'étape choix montant
 function showAmountStep() {
-  console.log('💰 Affichage étape montant');
+  console.log('Affichage étape montant');
   currentStep = 'amount';
 
   // Affichage du solde actuel
@@ -248,7 +248,7 @@ function confirmAmount() {
 
 // Traitement de la recharge
 async function processRecharge() {
-  console.log(`💳 Traitement recharge: ${selectedAmount} XOF`);
+  console.log(`Traitement recharge: ${selectedAmount} XOF`);
   showStep('step-processing');
 
   try {
@@ -274,7 +274,7 @@ async function processRecharge() {
       document.getElementById('newBalance').textContent = newBalance.toLocaleString('fr-FR');
       showStep('step-success');
 
-      console.log('✅ Recharge réussie');
+      console.log('Recharge réussie');
 
       // Auto-retour après 10 secondes
       setTimeout(newTransaction, 10000);
@@ -290,7 +290,7 @@ async function processRecharge() {
 
 // Nouvelle transaction
 function newTransaction() {
-  console.log('🔄 Nouvelle transaction');
+  console.log('Nouvelle transaction');
 
   // Reset des variables
   currentCard = null;
@@ -311,13 +311,13 @@ function newTransaction() {
 
 // Annulation de transaction
 function cancelTransaction() {
-  console.log('❌ Transaction annulée');
+  console.log('Transaction annulée');
   newTransaction();
 }
 
 // Affichage d'une erreur
 function showError(message) {
-  console.error('💥 Erreur:', message);
+  console.error('Erreur:', message);
   document.getElementById('errorMessage').textContent = message;
   showStep('step-error');
 
@@ -335,7 +335,7 @@ function showStep(stepId) {
   // Afficher l'étape demandée
   document.getElementById(stepId).classList.remove('hidden');
 
-  console.log(`📺 Affichage: ${stepId}`);
+  console.log(`Affichage: ${stepId}`);
 }
 
 // Gestion des raccourcis clavier pour le kiosque
@@ -364,11 +364,11 @@ document.addEventListener('keydown', (e) => {
 
 // Gestion de la perte de réseau
 window.addEventListener('online', () => {
-  console.log('🌐 Connexion rétablie');
+  console.log('Connexion rétablie');
   updateReaderStatus(true, 'Connexion rétablie');
 });
 
 window.addEventListener('offline', () => {
-  console.log('📡 Connexion perdue');
+  console.log('Connexion perdue');
   updateReaderStatus(false, 'Hors ligne');
 });

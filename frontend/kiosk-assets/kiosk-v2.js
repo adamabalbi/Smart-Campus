@@ -27,7 +27,7 @@ const kiosks = [
 function renderKioskList() {
   const list = document.getElementById('kioskList');
   list.innerHTML = kiosks.map(k =>
-    '<button class="btn" style="text-align:left;" data-action="chooseKiosk" data-id="' + k.id + '">📍 ' + k.label + '</button>'
+    '<button class="btn" style="text-align:left;" data-action="chooseKiosk" data-id="' + k.id + '">' + k.label + '</button>'
   ).join('');
 }
 
@@ -35,7 +35,7 @@ function renderKioskList() {
 function chooseKiosk(id) {
   selectedKiosk = kiosks.find(k => k.id === id);
   document.getElementById('selectedKioskBadge').innerHTML =
-    '📍 Borne : <strong>' + selectedKiosk.label + '</strong> ' +
+    '<i class="fa-solid fa-location-dot"></i> Borne : <strong>' + selectedKiosk.label + '</strong> ' +
     '<a href="#" data-action="changeKiosk" style="color:#fff; text-decoration:underline; font-size:0.85rem; margin-left:0.5rem;">changer</a>';
   showStep('waiting');
 }
@@ -58,13 +58,13 @@ function connectWebSocket() {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const wsUrl = `${protocol}//${window.location.host}`;
 
-  console.log('🔗 Connexion WebSocket:', wsUrl);
+  console.log('Connexion WebSocket:', wsUrl);
 
   websocket = new WebSocket(wsUrl);
 
   websocket.onopen = () => {
-    console.log('✅ WebSocket connecté');
-    updateNFCStatus('🟢 Lecteur NFC connecté - En attente de carte', true);
+    console.log('WebSocket connecté');
+    updateNFCStatus('Lecteur NFC connecté - En attente de carte', true);
 
     // Ping périodique pour maintenir la connexion
     setInterval(() => {
@@ -77,7 +77,7 @@ function connectWebSocket() {
   websocket.onmessage = (event) => {
     try {
       const data = JSON.parse(event.data);
-      console.log('📨 Événement WebSocket:', data);
+      console.log('Événement WebSocket:', data);
 
       switch (data.type) {
         case 'cardDetected':
@@ -85,14 +85,14 @@ function connectWebSocket() {
           break;
 
         case 'cardRemoved':
-          console.log('📤 Carte physique retirée');
+          console.log('Carte physique retirée');
           break;
 
         case 'status':
           if (data.nfcEnabled) {
-            updateNFCStatus('🟢 Service NFC actif', true);
+            updateNFCStatus('Service NFC actif', true);
           } else {
-            updateNFCStatus('🟠 Service NFC désactivé', false);
+            updateNFCStatus('Service NFC désactivé', false);
           }
           break;
 
@@ -101,21 +101,21 @@ function connectWebSocket() {
           break;
       }
     } catch (error) {
-      console.error('❌ Erreur parsing WebSocket:', error);
+      console.error('Erreur parsing WebSocket:', error);
     }
   };
 
   websocket.onclose = () => {
-    console.log('📡 WebSocket déconnecté');
-    updateNFCStatus('🔴 Connexion perdue - Reconnexion...', false);
+    console.log('WebSocket déconnecté');
+    updateNFCStatus('Connexion perdue - Reconnexion...', false);
 
     // Tentative de reconnexion après 3 secondes
     setTimeout(connectWebSocket, 3000);
   };
 
   websocket.onerror = (error) => {
-    console.error('❌ Erreur WebSocket:', error);
-    updateNFCStatus('🔴 Erreur de connexion NFC', false);
+    console.error('Erreur WebSocket:', error);
+    updateNFCStatus('Erreur de connexion NFC', false);
   };
 }
 
@@ -131,15 +131,15 @@ function updateNFCStatus(message, connected) {
 
 // Gestion des cartes physiques détectées
 async function handlePhysicalCard(uid, cardType) {
-  console.log('📱 Carte physique détectée:', uid, cardType);
+  console.log('Carte physique détectée:', uid, cardType);
 
   // Ne traiter que si on est en attente
   if (currentCard !== null) {
-    console.log('⚠️ Transaction déjà en cours, carte ignorée');
+    console.log('Transaction déjà en cours, carte ignorée');
     return;
   }
 
-  updateNFCStatus(`📖 Lecture carte ${uid.substring(0, 8)}...`, true);
+  updateNFCStatus(`Lecture carte ${uid.substring(0, 8)}...`, true);
 
   try {
     const response = await fetch('/api/nfc/auth', {
@@ -149,14 +149,14 @@ async function handlePhysicalCard(uid, cardType) {
     });
 
     const data = await response.json();
-    console.log('📄 Réponse auth carte physique:', data);
+    console.log('Réponse auth carte physique:', data);
 
     if (data.success) {
       currentCard = { uid: uid, ...data.data.card };
       currentStudent = data.data.student;
       currentWallet = data.data.wallet;
 
-      updateNFCStatus(`✅ Carte identifiée: ${currentStudent.prenom}`, true);
+      updateNFCStatus(`Carte identifiée: ${currentStudent.prenom}`, true);
 
       // Afficher infos étudiant
       document.getElementById('studentInfo').innerHTML = `
@@ -170,23 +170,23 @@ async function handlePhysicalCard(uid, cardType) {
       document.getElementById('pinInput').focus();
 
     } else {
-      updateNFCStatus('❌ Carte non reconnue', false);
+      updateNFCStatus('Carte non reconnue', false);
       showError(data.message || 'Carte non reconnue');
       setTimeout(() => {
-        updateNFCStatus('🟢 En attente de carte', true);
+        updateNFCStatus('En attente de carte', true);
       }, 3000);
     }
 
   } catch (error) {
-    console.error('💥 Erreur auth carte physique:', error);
-    updateNFCStatus('❌ Erreur de connexion', false);
+    console.error('Erreur auth carte physique:', error);
+    updateNFCStatus('Erreur de connexion', false);
     showError('Erreur de connexion: ' + error.message);
   }
 }
 
 // Fonction pour afficher une étape
 function showStep(stepName) {
-  console.log('📺 Affichage étape:', stepName);
+  console.log('Affichage étape:', stepName);
 
   // Masquer toutes les étapes
   document.querySelectorAll('.step').forEach(step => {
@@ -200,13 +200,13 @@ function showStep(stepName) {
     targetStep.classList.remove('hidden');
     targetStep.classList.add('active');
   } else {
-    console.error('❌ Étape non trouvée:', stepName);
+    console.error('Étape non trouvée:', stepName);
   }
 }
 
 // Simulation de carte (boutons de test)
 async function simulateCard(uid, studentName) {
-  console.log('🧪 Simulation carte:', uid, studentName);
+  console.log('Simulation carte:', uid, studentName);
 
   try {
     const response = await fetch('/api/nfc/auth', {
@@ -216,7 +216,7 @@ async function simulateCard(uid, studentName) {
     });
 
     const data = await response.json();
-    console.log('📄 Réponse API:', data);
+    console.log('Réponse API:', data);
 
     if (data.success) {
       currentCard = { uid: uid, ...data.data.card };
@@ -239,7 +239,7 @@ async function simulateCard(uid, studentName) {
     }
 
   } catch (error) {
-    console.error('💥 Erreur:', error);
+    console.error('Erreur:', error);
     showError('Erreur de connexion: ' + error.message);
   }
 }
@@ -255,7 +255,7 @@ async function validatePin() {
     return;
   }
 
-  console.log('🔐 Validation PIN via API...');
+  console.log('Validation PIN via API...');
 
   try {
     const response = await fetch('/api/nfc/validate-pin', {
@@ -269,11 +269,11 @@ async function validatePin() {
     });
 
     const data = await response.json();
-    console.log('🔑 Réponse validation PIN:', data);
+    console.log('Réponse validation PIN:', data);
 
     if (data.success) {
       errorDiv.style.display = 'none';
-      console.log('✅ PIN validé côté serveur');
+      console.log('PIN validé côté serveur');
 
       // Afficher le solde
       document.getElementById('currentBalance').textContent =
@@ -294,7 +294,7 @@ async function validatePin() {
     }
 
   } catch (error) {
-    console.error('💥 Erreur validation PIN:', error);
+    console.error('Erreur validation PIN:', error);
     errorDiv.textContent = 'Erreur de connexion';
     errorDiv.style.display = 'block';
   }
@@ -344,7 +344,7 @@ async function confirmRecharge() {
     });
 
     const data = await response.json();
-    console.log('💰 Réponse recharge:', data);
+    console.log('Réponse recharge:', data);
 
     if (data.success) {
       showReceipt(data.data.receipt);
@@ -359,7 +359,7 @@ async function confirmRecharge() {
     }
 
   } catch (error) {
-    console.error('💥 Erreur recharge:', error);
+    console.error('Erreur recharge:', error);
     showError('Erreur: ' + error.message);
   }
 }
@@ -399,7 +399,7 @@ function showError(message) {
 
 // Redémarrage
 function restart() {
-  console.log('🔄 Redémarrage');
+  console.log('Redémarrage');
 
   // Reset des variables
   currentCard = null;
@@ -422,7 +422,7 @@ function restart() {
 
   // Remettre le statut NFC en attente
   if (nfcConnected) {
-    updateNFCStatus('🟢 En attente de carte', true);
+    updateNFCStatus('En attente de carte', true);
   }
 
   // Revenir à l'attente de carte si une borne est déjà choisie,
@@ -450,7 +450,7 @@ function handleDelegatedClick(e) {
 
 // Initialisation au chargement de la page
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('🎯 Initialisation kiosque NFC');
+  console.log('Initialisation kiosque NFC');
 
   // Gestionnaire de clics délégué pour toute la page
   document.addEventListener('click', handleDelegatedClick);
@@ -468,5 +468,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  console.log('✅ Kiosque NFC prêt');
+  console.log('Kiosque NFC prêt');
 });

@@ -17,11 +17,11 @@
   content: "";
   position: absolute;
   border-radius: 50%;
-  border: 1.5px solid rgba(201, 168, 106, 0.18);
+  border: 1.5px solid rgba(176, 137, 104, 0.18);
   pointer-events: none;
 }
 .id-card::before { width: 220px; height: 220px; top: -90px; right: -50px; }
-.id-card::after  { width: 140px; height: 140px; bottom: -70px; right: 90px; background: rgba(201, 168, 106, 0.05); border: none; }
+.id-card::after  { width: 140px; height: 140px; bottom: -70px; right: 90px; background: rgba(176, 137, 104, 0.05); border: none; }
 
 .id-card-head {
   position: relative;

@@ -111,18 +111,18 @@ app.get("/kiosk-v2", strictCSP, (req, res) => {
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Source Sans 3', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #3D1F47, #2A1530);
+      background: linear-gradient(135deg, #4F6F52, #3F5F4A);
       min-height: 100vh; color: white;
     }
     .container {
       max-width: 700px; margin: 2rem auto; padding: 2rem;
       background: rgba(255,255,255,0.08); border-radius: 20px;
-      border-top: 4px solid #C9A86A;
+      border-top: 4px solid #B08968;
       backdrop-filter: blur(10px); text-align: center;
-      box-shadow: 0 20px 40px rgba(42,21,48,0.35);
+      box-shadow: 0 20px 40px rgba(31,41,51,0.35);
     }
     .title { font-family: 'Fraunces', Georgia, serif; font-size: 2.5rem; margin-bottom: 0.5rem; font-weight: 700; }
-    .subtitle { font-size: 1.2rem; opacity: 0.85; margin-bottom: 2rem; color: #E4D2A8; }
+    .subtitle { font-size: 1.2rem; opacity: 0.85; margin-bottom: 2rem; color: #D8C3AC; }
     .step {
       background: rgba(255,255,255,0.1); padding: 3rem 2rem; margin: 2rem 0;
       border-radius: 15px; border: 2px solid rgba(255,255,255,0.2);
@@ -136,11 +136,11 @@ app.get("/kiosk-v2", strictCSP, (req, res) => {
     }
     .btn:hover { background: rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.8); }
     .btn:active { transform: scale(0.98); }
-    .btn.selected { background: rgba(201,168,106,0.35); border-color: #C9A86A; }
+    .btn.selected { background: rgba(176,137,104,0.35); border-color: #B08968; }
     .input {
       background: rgba(255,255,255,0.94); border: none; padding: 1.2rem;
       font-size: 1.8rem; text-align: center; border-radius: 10px; margin: 1rem;
-      color: #2A1F2D; font-weight: 600; letter-spacing: 0.2rem;
+      color: #1F2933; font-weight: 600; letter-spacing: 0.2rem;
     }
     .status {
       display: inline-flex; align-items: center; gap: 0.5rem;
@@ -166,14 +166,14 @@ app.get("/kiosk-v2", strictCSP, (req, res) => {
       font-size: 4rem; animation: spin 1s linear infinite; margin: 1.5rem 0;
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .balance { font-family: 'Fraunces', Georgia, serif; font-size: 2.5rem; font-weight: 700; margin: 1.5rem 0; color: #E4D2A8; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+    .balance { font-family: 'Fraunces', Georgia, serif; font-size: 2.5rem; font-weight: 700; margin: 1.5rem 0; color: #D8C3AC; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
     .student-info {
       background: rgba(255,255,255,0.12); border-radius: 10px;
       padding: 1.5rem; margin: 1.5rem 0; text-align: left;
     }
     .student-info h3 { font-family: 'Fraunces', Georgia, serif; margin: 0 0 0.5rem 0; font-size: 1.6rem; }
     .student-info p { margin: 0.3rem 0; opacity: 0.9; font-size: 1.1rem; }
-    .error { color: #F0C9C3; background: rgba(155,58,58,0.25); padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+    .error { color: #EAD3D0; background: rgba(184,92,92,0.25); padding: 1rem; border-radius: 8px; margin: 1rem 0; }
   </style>
 </head>
 <body>
@@ -282,18 +282,18 @@ app.get("/kiosk-v2", strictCSP, (req, res) => {
       <div class="success-icon">✅</div>
       <h2>Recharge effectuée avec succès !</h2>
 
-      <div id="receiptBox" style="background:#fff; color:#2A1F2D; border-radius:12px; padding:1.5rem; max-width:420px; margin:1.5rem auto; text-align:left; font-size:14px; box-shadow:0 8px 24px rgba(0,0,0,0.25);">
-        <div style="text-align:center; border-bottom:2px dashed #E4DCE2; padding-bottom:0.75rem; margin-bottom:0.75rem;">
+      <div id="receiptBox" style="background:#fff; color:#1F2933; border-radius:12px; padding:1.5rem; max-width:420px; margin:1.5rem auto; text-align:left; font-size:14px; box-shadow:0 8px 24px rgba(0,0,0,0.25);">
+        <div style="text-align:center; border-bottom:2px dashed #E6E1D8; padding-bottom:0.75rem; margin-bottom:0.75rem;">
           <div style="font-size:1.2rem; font-weight:700;">🏫 Smart Campus</div>
-          <div style="font-size:0.85rem; color:#80727F;">Reçu de recharge</div>
+          <div style="font-size:0.85rem; color:#6B7280;">Reçu de recharge</div>
         </div>
         <div style="display:flex; justify-content:space-between; margin:0.35rem 0;"><span>N° reçu</span><strong id="rcNumber">—</strong></div>
         <div style="display:flex; justify-content:space-between; margin:0.35rem 0;"><span>Date</span><strong id="rcDate">—</strong></div>
         <div style="display:flex; justify-content:space-between; margin:0.35rem 0;"><span>Borne</span><strong id="rcKiosk">—</strong></div>
         <div style="display:flex; justify-content:space-between; margin:0.35rem 0;"><span>Étudiant</span><strong id="rcStudent">—</strong></div>
         <div style="display:flex; justify-content:space-between; margin:0.35rem 0;"><span>Matricule</span><strong id="rcMatricule">—</strong></div>
-        <div style="border-top:2px dashed #E4DCE2; margin-top:0.75rem; padding-top:0.75rem;">
-          <div style="display:flex; justify-content:space-between; margin:0.35rem 0;"><span>Montant rechargé</span><strong id="rcAmount" style="color:#5B7553;">—</strong></div>
+        <div style="border-top:2px dashed #E6E1D8; margin-top:0.75rem; padding-top:0.75rem;">
+          <div style="display:flex; justify-content:space-between; margin:0.35rem 0;"><span>Montant rechargé</span><strong id="rcAmount" style="color:#5F8D4E;">—</strong></div>
           <div style="display:flex; justify-content:space-between; margin:0.35rem 0;"><span>Ancien solde</span><span id="rcBefore">—</span></div>
           <div style="display:flex; justify-content:space-between; margin:0.35rem 0;"><span>Nouveau solde</span><strong id="rcAfter">—</strong></div>
         </div>
@@ -307,7 +307,7 @@ app.get("/kiosk-v2", strictCSP, (req, res) => {
 
     <!-- Étape 6: Erreur -->
     <div id="error" class="step hidden">
-      <div style="font-size: 4rem; color: #C98A85; margin-bottom: 1rem;">❌</div>
+      <div style="font-size: 4rem; color: #B85C5C; margin-bottom: 1rem;">❌</div>
       <h2>Erreur de transaction</h2>
       <div id="errorMessage" style="margin: 1.5rem 0; padding: 1rem; background: rgba(255,107,107,0.2); border-radius: 8px;"></div>
 

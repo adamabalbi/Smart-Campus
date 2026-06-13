@@ -1,46 +1,59 @@
 :root {
-  /* Couleurs de marque */
-  --aubergine:      #3D1F47;
-  --aubergine-dark: #2A1530;
-  --aubergine-soft: #6B4178;
-  --violet-mist:    #F1E9F0;
-  --or:             #C9A86A;
-  --or-soft:        #E4D2A8;
-  --or-deep:        #A8853F;
+  /* ===== Charte institutionnelle — vert sauge / anthracite / terre cuite ===== */
+  /* Vert sauge (couleur principale) */
+  --sage:        #4F6F52;
+  --sage-dark:   #3F5F4A;
+  --sage-soft:   #6E8A70;
+  --sage-mist:   #ECF0EA;   /* fond vert très clair (en-têtes, survols) */
+  --anthracite:  #2F3437;   /* gris anthracite doux */
+  /* Terre cuite (accent discret) */
+  --terracotta:      #B08968;
+  --terracotta-soft: #D8C3AC;
+  --terracotta-deep: #A67C52;
+
+  /* --- Alias historiques : conservés pour compatibilité, repointés vers la
+         nouvelle charte (ne PAS supprimer, utilisés dans student.css & inline) --- */
+  --aubergine:      var(--sage);
+  --aubergine-dark: var(--sage-dark);
+  --aubergine-soft: var(--sage-soft);
+  --violet-mist:    var(--sage-mist);
+  --or:             var(--terracotta);
+  --or-soft:        var(--terracotta-soft);
+  --or-deep:        var(--terracotta-deep);
 
   /* Sémantique */
-  --primary:      var(--aubergine);
-  --primary-dark: var(--aubergine-dark);
-  --secondary:    var(--aubergine-soft);
-  --accent:       var(--or);
-  --accent-dark:  var(--or-deep);
-  --danger:  #9B3A3A;
-  --danger-bg: #F7E9E7;
-  --success: #5B7553;
-  --success-bg: #ECF1E8;
-  --warning: #B07D2B;
-  --warning-bg: #FBF1DE;
+  --primary:      var(--sage);
+  --primary-dark: var(--sage-dark);
+  --secondary:    var(--sage-soft);
+  --accent:       var(--terracotta);
+  --accent-dark:  var(--terracotta-deep);
+  --danger:  #B85C5C;        /* rouge brique discret */
+  --danger-bg: #F6E9E9;
+  --success: #5F8D4E;        /* vert doux */
+  --success-bg: #EAF1E5;
+  --warning: #C9A227;        /* ocre doux */
+  --warning-bg: #F7EFD6;
 
   /* Neutres */
-  --text:   #2A1F2D;
-  --muted:  #80727F;
-  --border: #E4DCE2;
-  --bg:     #F7F3ED;
-  --card:   #FFFFFF;
-  --sidebar: var(--aubergine-dark);
-  --sidebar-text: #EDE4EC;
-  --sidebar-muted: #B6A0BC;
+  --text:   #1F2933;         /* gris charbon */
+  --muted:  #6B7280;         /* gris doux */
+  --border: #E6E1D8;         /* bord chaud discret */
+  --bg:     #F7F4EF;         /* ivoire / blanc cassé */
+  --card:   #FFFFFF;         /* blanc chaud */
+  --sidebar: var(--anthracite);
+  --sidebar-text: #E8E6E1;
+  --sidebar-muted: #9CA39B;
 
   /* Typo */
   --font-display: 'Fraunces', 'Georgia', serif;
   --font-body: 'Source Sans 3', 'Segoe UI', sans-serif;
 
   /* Forme */
-  --radius-sm: 6px;
-  --radius: 10px;
+  --radius-sm: 8px;
+  --radius: 12px;
   --radius-lg: 16px;
-  --shadow: 0 2px 10px rgba(61, 31, 71, 0.06);
-  --shadow-md: 0 8px 28px rgba(61, 31, 71, 0.10);
+  --shadow: 0 1px 3px rgba(31, 41, 51, 0.05), 0 1px 2px rgba(31, 41, 51, 0.04);
+  --shadow-md: 0 6px 20px rgba(31, 41, 51, 0.07);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -125,7 +138,7 @@ body {
 .field input:focus,
 .field select:focus {
   border-color: var(--aubergine-soft);
-  box-shadow: 0 0 0 3px rgba(107, 65, 120, 0.12);
+  box-shadow: 0 0 0 3px rgba(79, 111, 82, 0.15);
 }
 
 /* ---- BUTTONS ---- */
@@ -175,8 +188,8 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
   font-size: 13px;
   margin-bottom: 0.75rem;
 }
-.alert-error  { background: var(--danger-bg); color: var(--danger); border: 1px solid #E6C9C5; }
-.alert-success{ background: var(--success-bg); color: var(--success); border: 1px solid #CEDBC5; }
+.alert-error  { background: var(--danger-bg); color: var(--danger); border: 1px solid #E6D2D2; }
+.alert-success{ background: var(--success-bg); color: var(--success); border: 1px solid #D5E2CC; }
 .hidden { display: none !important; }
 
 /* ---- LAYOUT ---- */
@@ -218,7 +231,8 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 .sidebar-nav { flex: 1; padding: 0.5rem 0; }
 
 .nav-item {
-  display: block;
+  display: flex;
+  align-items: center;
   padding: 0.65rem 1.25rem;
   color: var(--sidebar-muted);
   cursor: pointer;
@@ -226,9 +240,12 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
   transition: background 0.15s, color 0.15s;
   border-left: 3px solid transparent;
 }
+/* Icônes Font Awesome dans la navigation : alignées et discrètes */
+.nav-item i { width: 18px; margin-right: 10px; text-align: center; font-size: 13px; opacity: 0.9; }
+.nav-item.active i { color: var(--accent); opacity: 1; }
 .nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
 .nav-item.active {
-  background: rgba(201, 168, 106, 0.14);
+  background: rgba(79, 111, 82, 0.16);
   color: white;
   border-left-color: var(--or);
 }
@@ -363,7 +380,7 @@ tbody tr:hover td { background: var(--violet-mist); }
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(42, 21, 48, 0.5);
+  background: rgba(31, 41, 51, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;

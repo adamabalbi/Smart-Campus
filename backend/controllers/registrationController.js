@@ -35,7 +35,11 @@ const submitRegistration = async (req, res) => {
       emailTokenExpiresAt,
     });
 
-    const verifyUrl = `http://localhost:5000/api/registration/verify-email/${emailToken}`;
+    // URL publique du backend : priorité à PUBLIC_BACKEND_URL, sinon déduite de
+    // la requête (protocole/host réels, corrects derrière le proxy Render grâce
+    // à app.set('trust proxy')). Évite le localhost codé en dur sur le cloud.
+    const baseUrl = (process.env.PUBLIC_BACKEND_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
+    const verifyUrl = `${baseUrl}/api/registration/verify-email/${emailToken}`;
 
     await sendEmail({
       to: email,

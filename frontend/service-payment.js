@@ -45,7 +45,7 @@ async function checkServiceActive() {
 function blockService() {
   const container = document.querySelector(".svc-container");
   container.innerHTML = `
-    <h1 class="svc-title">${CFG.title}</h1>
+    <h1 class="svc-title">${CFG.icon ? '<i class="fa-solid '+CFG.icon+'"></i> ' : ''}${CFG.title}</h1>
     <div class="svc-card" style="text-align:center; padding:3rem 1.5rem;">
       <div style="font-size:4rem;"><i class="fa-solid fa-ban"></i></div>
       <h2 style="margin:1rem 0;">Service indisponible</h2>
@@ -55,7 +55,7 @@ function blockService() {
 
 // --- Initialisation de la page ---
 document.addEventListener("DOMContentLoaded", () => {
-  $("pageTitle").textContent = CFG.title;
+  $("pageTitle").innerHTML = (CFG.icon ? '<i class="fa-solid '+CFG.icon+'"></i> ' : '') + CFG.title;
   document.title = CFG.title + " — Smart Campus";
 
   // Bloquer la page si le service est désactivé

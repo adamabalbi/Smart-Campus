@@ -1,0 +1,16 @@
+{
+  "name": "smart-campus-nfc-agent",
+  "version": "1.0.0",
+  "description": "Agent NFC local : lit le lecteur ACR122U (USB/PCSC) et pousse les lectures de carte vers le backend cloud Smart Campus.",
+  "main": "agent.js",
+  "scripts": {
+    "start": "node agent.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "nfc-pcsc": "^0.8.1"
+  }
+}

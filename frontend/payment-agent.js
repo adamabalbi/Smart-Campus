@@ -1,4 +1,4 @@
-const API = "http://localhost:5000/api";
+const API = (window.SMART_CAMPUS_CONFIG && window.SMART_CAMPUS_CONFIG.API_BASE_URL) || "http://localhost:5000/api";
 
 const token = localStorage.getItem("token");
 const me = JSON.parse(localStorage.getItem("user") || "null");
@@ -129,7 +129,7 @@ function scanCard() {
   setScanHint("📡 Approchez la carte de l'étudiant du lecteur ACR122U...", "var(--primary)");
   scanActive = true;
 
-  scanSocket = new WebSocket("ws://localhost:5000");
+  scanSocket = new WebSocket((window.SMART_CAMPUS_CONFIG && window.SMART_CAMPUS_CONFIG.WS_BASE_URL) || "ws://localhost:5000");
 
   scanSocket.onmessage = (event) => {
     try {

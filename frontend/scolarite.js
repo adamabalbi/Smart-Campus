@@ -1,4 +1,4 @@
-const API = "http://localhost:5000/api";
+const API = (window.SMART_CAMPUS_CONFIG && window.SMART_CAMPUS_CONFIG.API_BASE_URL) || "http://localhost:5000/api";
 
 const token = localStorage.getItem("token");
 const me    = JSON.parse(localStorage.getItem("user") || "null");

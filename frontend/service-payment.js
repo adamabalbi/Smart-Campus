@@ -3,7 +3,7 @@
 // Chaque page définit window.SERVICE_CONFIG avant de charger ce script.
 // =============================================================
 
-const API = "http://localhost:5000/api";
+const API = (window.SMART_CAMPUS_CONFIG && window.SMART_CAMPUS_CONFIG.API_BASE_URL) || "http://localhost:5000/api";
 const CFG = window.SERVICE_CONFIG;
 
 // État courant
@@ -97,7 +97,7 @@ function scanCard() {
   }
   setStatus("📡 Approchez la carte de l'étudiant du lecteur...", "#2563eb");
   scanActive = true;
-  scanSocket = new WebSocket("ws://localhost:5000");
+  scanSocket = new WebSocket((window.SMART_CAMPUS_CONFIG && window.SMART_CAMPUS_CONFIG.WS_BASE_URL) || "ws://localhost:5000");
 
   scanSocket.onmessage = (event) => {
     try {

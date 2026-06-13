@@ -1,4 +1,4 @@
-const API = "http://localhost:5000/api";
+const API = (window.SMART_CAMPUS_CONFIG && window.SMART_CAMPUS_CONFIG.API_BASE_URL) || "http://localhost:5000/api";
 
 // ---- Auth guard ----
 const token = localStorage.getItem("token");
@@ -781,7 +781,7 @@ document.getElementById("scanCardBtn")?.addEventListener("click", () => {
     return;
   }
 
-  const wsUrl = "ws://localhost:5000";
+  const wsUrl = (window.SMART_CAMPUS_CONFIG && window.SMART_CAMPUS_CONFIG.WS_BASE_URL) || "ws://localhost:5000";
   setScanStatus("📡 Approchez la carte du lecteur ACR122U...", "var(--primary)");
   scanActive = true;
 

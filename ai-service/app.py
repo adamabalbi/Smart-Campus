@@ -9,13 +9,22 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
 
-# Chemin du modèle (à la racine du projet, un niveau au-dessus de ce dossier)
-MODEL_PATH = os.environ.get(
-    "MODEL_PATH",
-    os.path.join(os.path.dirname(__file__), "..", "smart_campus_random_forest_model.joblib"),
-)
+# CORS : par défaut tout autorisé (l'appelant est le backend, server-to-server).
+# Pour restreindre, définir AI_CORS_ORIGINS (ex. "https://smart-campus-api.onrender.com").
+_cors_origins = os.environ.get("AI_CORS_ORIGINS", "*")
+CORS(app, origins=[o.strip() for o in _cors_origins.split(",")] if _cors_origins != "*" else "*")
+
+# Chemin du modèle. Priorité à MODEL_PATH (env), sinon on cherche le .joblib
+# à la racine du repo (déploiement Render avec root = ai-service) ou dans ce dossier.
+_MODEL_NAME = "smart_campus_random_forest_model.joblib"
+_HERE = os.path.dirname(__file__)
+_CANDIDATES = [
+    os.environ.get("MODEL_PATH"),
+    os.path.join(_HERE, "..", _MODEL_NAME),  # racine du repo
+    os.path.join(_HERE, _MODEL_NAME),         # dans ai-service/
+]
+MODEL_PATH = next((p for p in _CANDIDATES if p and os.path.exists(p)), _CANDIDATES[1])
 
 # Colonnes attendues par le pipeline, dans l'ordre d'entraînement
 FEATURES = [
@@ -86,8 +95,12 @@ def predict():
         return jsonify({"error": f"Erreur de prédiction : {e}"}), 400
 
 
+# Chargement du modèle à l'import du module : indispensable pour gunicorn
+# (sous gunicorn, le bloc __main__ n'est PAS exécuté).
+load_model()
+
 if __name__ == "__main__":
-    load_model()
-    port = int(os.environ.get("AI_PORT", 5001))
+    # Démarrage en local (serveur de dev Flask)
+    port = int(os.environ.get("PORT", os.environ.get("AI_PORT", 5001)))
     print(f"🤖 Service IA démarré sur http://localhost:{port}")
     app.run(host="0.0.0.0", port=port)

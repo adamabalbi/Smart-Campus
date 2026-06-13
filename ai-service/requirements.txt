@@ -2,4 +2,8 @@ flask
 flask-cors
 joblib
 pandas
-scikit-learn
+# Version épinglée : le modèle .joblib a été entraîné avec scikit-learn 1.6.1.
+# Une autre version échoue au chargement (InconsistentVersionWarning -> erreur).
+scikit-learn==1.6.1
+# Serveur WSGI de production (Render)
+gunicorn

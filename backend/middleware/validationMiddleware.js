@@ -19,8 +19,8 @@ const handleValidationErrors = (req, res, next) => {
 const validateLogin = [
   body('email')
     .isEmail()
-    .normalizeEmail()
-    .withMessage('Email invalide'),
+    .withMessage('Email invalide')
+    .trim(),
   body('password')
     .isLength({ min: 1 })
     .withMessage('Mot de passe requis')
@@ -61,6 +61,7 @@ const validatePayment = [
   handleValidationErrors
 ];
 
+// Recharge via borne/agent : le PIN est fourni dans la requête
 const validateRecharge = [
   body('uid')
     .isLength({ min: 4, max: 32 })
@@ -70,6 +71,19 @@ const validateRecharge = [
     .isLength({ min: 4, max: 6 })
     .isNumeric()
     .withMessage('PIN invalide (4-6 chiffres)'),
+  body('amount')
+    .isFloat({ min: 100, max: 500000 })
+    .withMessage('Montant de recharge invalide (100-500000)'),
+  handleValidationErrors
+];
+
+// Recharge NFC (kiosque) : le PIN a déjà été validé à une étape précédente,
+// donc il n'est pas transmis ici — on valide uniquement l'UID et le montant.
+const validateNfcRecharge = [
+  body('uid')
+    .isLength({ min: 4, max: 32 })
+    .isAlphanumeric()
+    .withMessage('UID de carte invalide'),
   body('amount')
     .isFloat({ min: 100, max: 500000 })
     .withMessage('Montant de recharge invalide (100-500000)'),
@@ -88,9 +102,9 @@ const validateUserCreation = [
     .withMessage('Prénom invalide (2-50 caractères, lettres uniquement)'),
   body('email')
     .isEmail()
-    .normalizeEmail()
-    .isLength({ max: 100 })
-    .withMessage('Email invalide'),
+    .withMessage('Email invalide')
+    .trim()
+    .isLength({ max: 100 }),
   body('role')
     .isIn(['admin', 'security_agent', 'payment_agent', 'librarian', 'service_scolarite', 'charge_cantine', 'charge_imprimerie'])
     .withMessage('Rôle invalide'),
@@ -114,6 +128,7 @@ module.exports = {
   validateOTP,
   validatePayment,
   validateRecharge,
+  validateNfcRecharge,
   validateUserCreation,
   validateAccess,
   handleValidationErrors

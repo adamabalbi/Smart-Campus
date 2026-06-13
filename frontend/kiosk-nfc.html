@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kiosque NFC - Smart Campus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
     .kiosk-container {
@@ -70,12 +73,12 @@
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      background: #ff4444;
+      background: #9B3A3A;
       animation: pulse 2s infinite;
     }
 
     .status-indicator.connected {
-      background: #44ff44;
+      background: #5B7553;
     }
 
     @keyframes pulse {
@@ -149,7 +152,7 @@
 
     .success-animation {
       font-size: 8rem;
-      color: #44ff44;
+      color: #5B7553;
       animation: success-bounce 0.6s ease-out;
     }
 
@@ -296,6 +299,7 @@
     </div>
   </div>
 
-  <script src="kiosk-nfc.js"></script>
+  <script src="config.js"></script>
+<script src="kiosk-nfc.js"></script>
 </body>
 </html>

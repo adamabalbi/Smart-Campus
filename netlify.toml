@@ -1,0 +1,17 @@
+# Déploiement du frontend statique Smart Campus sur Netlify.
+# Le dossier publié est `frontend/` (HTML/CSS/JS, pas d'étape de build).
+#
+# ⚠️ Avant de déployer : éditez frontend/config.js et remplacez
+#    PROD_BACKEND_ORIGIN par l'URL de votre backend Render.
+
+[build]
+  publish = "frontend"
+  command = ""
+
+# En-têtes de sécurité de base pour les pages servies
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"

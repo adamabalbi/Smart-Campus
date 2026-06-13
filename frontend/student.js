@@ -1,4 +1,4 @@
-const API = "http://localhost:5000/api";
+const API = (window.SMART_CAMPUS_CONFIG && window.SMART_CAMPUS_CONFIG.API_BASE_URL) || "http://localhost:5000/api";
 
 // ---- Auth guard (student only) ----
 const token = localStorage.getItem("token");
@@ -95,15 +95,15 @@ function renderSummary(user, student, card, wallet) {
     : `<span class="muted">Non encore créée</span>`;
 
   document.getElementById("summaryCard").innerHTML = `
+    <div class="id-card-head">
+      <span class="id-card-inst">🏫 Smart Campus · Carte Étudiant</span>
+      <span class="id-card-chip"></span>
+    </div>
+    <div class="id-card-identity">
+      <div class="id-card-name">${user.prenom} ${user.nom}</div>
+      <div class="id-card-matricule">${student?.matricule || "Matricule non attribué"}</div>
+    </div>
     <div class="summary-grid">
-      <div class="summary-item">
-        <span class="label">Nom complet</span>
-        <span class="value">${user.prenom} ${user.nom}</span>
-      </div>
-      <div class="summary-item">
-        <span class="label">Matricule</span>
-        <span class="value">${student?.matricule || "—"}</span>
-      </div>
       <div class="summary-item">
         <span class="label">Email</span>
         <span class="value">${user.email}</span>
@@ -293,12 +293,27 @@ function renderTransactionItem(transaction) {
     api: "Système"
   };
 
+  // Libellés des services de paiement (clé technique → nom affiché)
+  const serviceLabels = {
+    cantine: "Cantine",
+    bibliotheque: "Bibliothèque",
+    imprimerie: "Imprimerie"
+  };
+
+  // Pour un paiement, afficher le nom du service plutôt que le canal technique
+  const serviceName = transaction.metadata?.serviceLabel
+    || serviceLabels[transaction.metadata?.service]
+    || null;
+  const sourceLabel = (transaction.type === "payment" && serviceName)
+    ? serviceName
+    : (channelLabels[transaction.channel] || transaction.channel);
+
   return `
     <div class="transaction-item">
       <div class="transaction-info">
         <div class="transaction-title">${typeLabels[transaction.type] || transaction.type}</div>
         <div class="transaction-details">
-          ${channelLabels[transaction.channel] || transaction.channel}
+          ${sourceLabel}
           ${transaction.description ? ` • ${transaction.description}` : ""}
         </div>
       </div>

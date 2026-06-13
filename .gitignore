@@ -27,6 +27,8 @@ venv/
 
 # Modèles / fichiers volumineux
 *.joblib
+# Exception : le modèle de l'ai-service DOIT être commité pour le déploiement (2.1 Mo)
+!smart_campus_random_forest_model.joblib
 
 # Éditeurs
 .vscode/

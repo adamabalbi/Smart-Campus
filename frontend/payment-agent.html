@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Smart Campus — Agent de Paiement</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -37,7 +40,7 @@
       <!-- Recherche de carte -->
       <div class="card">
         <div class="card-title">1. Identifier la carte de l'étudiant</div>
-        <div style="background: #f8f9fa; border-left: 4px solid var(--primary); padding: 1rem; margin-bottom: 1rem;">
+        <div style="background: var(--violet-mist); border-left: 4px solid var(--primary); padding: 1rem; margin-bottom: 1rem;">
           <strong>📡 Mode de fonctionnement :</strong><br>
           Cliquez sur <strong>Scanner</strong> puis posez la carte de l'étudiant sur le lecteur ACR122U.
           En l'absence de lecteur, vous pouvez aussi saisir manuellement l'UID imprimé sur la carte.
@@ -88,7 +91,7 @@
       <!-- Formulaire de recharge -->
       <div class="card" id="rechargeFormCard" style="display: none;">
         <div class="card-title">3. Effectuer la recharge</div>
-        <div style="background: #e6f3ff; border: 1px solid #b3d9ff; border-radius: 6px; padding: 1rem; margin-bottom: 1rem;">
+        <div style="background: var(--violet-mist); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; margin-bottom: 1rem;">
           <strong>📋 Procédure :</strong><br>
           1. Saisissez le montant à recharger<br>
           2. L'étudiant saisit son code PIN dans le champ prévu<br>
@@ -239,6 +242,7 @@
   </main>
 </div>
 
+<script src="config.js"></script>
 <script src="payment-agent.js"></script>
 </body>
 </html>

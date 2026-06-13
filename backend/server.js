@@ -18,6 +18,10 @@ connectDB();
 
 const app = express();
 
+// Derrière le proxy de Render (et autres PaaS) : nécessaire pour que req.ip et
+// express-rate-limit lisent correctement l'IP réelle (X-Forwarded-For).
+app.set("trust proxy", 1);
+
 // Normalise une origine pour comparaison (retire un éventuel slash final).
 const normalizeOrigin = (o) => (o || "").trim().replace(/\/+$/, "");
 

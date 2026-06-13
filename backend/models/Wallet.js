@@ -45,7 +45,7 @@ const walletSchema = new mongoose.Schema(
 );
 
 // Index pour optimiser les requêtes
-walletSchema.index({ studentId: 1 });
+// (studentId est déjà indexé via `unique: true` sur le champ)
 walletSchema.index({ cardId: 1 });
 walletSchema.index({ status: 1 });
 

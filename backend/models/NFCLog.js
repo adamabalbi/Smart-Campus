@@ -21,8 +21,8 @@ const nfcLogSchema = new mongoose.Schema(
     timestamp: {
       type: Date,
       required: true,
-      default: Date.now,
-      index: true
+      default: Date.now
+      // index défini plus bas via schema.index() (incl. TTL)
     },
     deviceId: {
       type: String, // ID du lecteur NFC

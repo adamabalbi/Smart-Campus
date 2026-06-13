@@ -24,14 +24,16 @@ const {
   validateUserCreation
 } = require("../middleware/validationMiddleware");
 
+const { verifyTurnstile } = require("../middleware/turnstileMiddleware");
+
 router.get("/test", (req, res) => {
   res.json({
     message: "Route authentification fonctionnelle",
   });
 });
 
-// Connexion avec OTP
-router.post("/login", validateLogin, loginUser);
+// Connexion avec OTP (protégée par Turnstile anti-robot)
+router.post("/login", verifyTurnstile, validateLogin, loginUser);
 router.post("/verify-otp", validateOTP, verifyOTP);
 router.post("/logout", protect, logoutUser);
 router.patch("/change-password", protect, changePassword);

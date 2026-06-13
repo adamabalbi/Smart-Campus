@@ -10,9 +10,10 @@ const {
 } = require("../controllers/registrationController");
 
 const { protect, authorizeRoles } = require("../middleware/authMiddleware");
+const { verifyTurnstile } = require("../middleware/turnstileMiddleware");
 
-// Routes publiques
-router.post("/",                       submitRegistration);
+// Routes publiques (inscription protégée par Turnstile anti-robot)
+router.post("/",                       verifyTurnstile, submitRegistration);
 router.get("/verify-email/:token",     verifyEmail);
 
 // Routes protégées (admin + super_admin)

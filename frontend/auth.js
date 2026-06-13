@@ -31,17 +31,25 @@ loginForm.addEventListener("submit", async (e) => {
   loginBtn.textContent = "Connexion...";
 
   try {
+    const turnstileToken = document.querySelector('#loginForm [name="cf-turnstile-response"]')?.value || "";
+
     const res  = await fetch(`${API}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email:    document.getElementById("email").value.trim(),
         password: document.getElementById("password").value,
+        turnstileToken,
       }),
     });
     const data = await res.json();
 
-    if (!res.ok) { alert(loginAlert, data.message); return; }
+    if (!res.ok) {
+      // Jeton Turnstile à usage unique : on le réinitialise pour le prochain essai
+      if (window.turnstile) try { window.turnstile.reset(); } catch {}
+      alert(loginAlert, data.message);
+      return;
+    }
 
     pendingUserId = data.userId;
     otpHint.textContent = `Code envoyé à ${data.email}`;

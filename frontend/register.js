@@ -23,6 +23,8 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
   if (tel) body.telephone   = tel;
   if (dep) body.departement = dep;
 
+  body.turnstileToken = document.querySelector('#registerForm [name="cf-turnstile-response"]')?.value || "";
+
   try {
     const res  = await fetch(`${API}/registration`, {
       method: "POST",
@@ -32,6 +34,7 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
     const data = await res.json();
 
     if (!res.ok) {
+      if (window.turnstile) try { window.turnstile.reset(); } catch {}
       alert.textContent = data.message;
       alert.classList.remove("hidden");
       return;

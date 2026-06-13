@@ -18,16 +18,26 @@ connectDB();
 
 const app = express();
 
-const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(",").map(o => o.trim())
-  : ["http://localhost:5000", "http://127.0.0.1:5000"]; // Origines par défaut pour développement
+// Normalise une origine pour comparaison (retire un éventuel slash final).
+const normalizeOrigin = (o) => (o || "").trim().replace(/\/+$/, "");
+
+const allowedOrigins = (process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",")
+  : ["http://localhost:5500", "http://127.0.0.1:5500", "http://localhost:5000"]
+).map(normalizeOrigin).filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Autoriser les requêtes sans origin ou origin null (fichiers locaux, Thunder Client, Postman)
+    // Requêtes sans origin (fichiers locaux, Postman, server-to-server) : autorisées
     if (!origin || origin === "null") return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    callback(new Error(`Origine non autorisée : ${origin}`));
+    const clean = normalizeOrigin(origin);
+    // Origines configurées + tout sous-domaine *.netlify.app / *.vercel.app (déploiements front)
+    const ok = allowedOrigins.includes(clean)
+      || /\.netlify\.app$/.test(clean)
+      || /\.vercel\.app$/.test(clean);
+    // En cas de refus : on renvoie false (pas d'en-tête CORS) au lieu de lever une
+    // erreur (qui produirait un 500 masquant la vraie cause).
+    return callback(null, ok);
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],

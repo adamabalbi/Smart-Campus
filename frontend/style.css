@@ -193,7 +193,9 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 .hidden { display: none !important; }
 
 /* ---- LAYOUT ---- */
-.layout, .app-shell { display: flex; min-height: 100vh; }
+/* Layout pleine hauteur : la page ne défile pas globalement ;
+   seuls la sidebar (si besoin) et le contenu principal défilent indépendamment. */
+.layout, .app-shell { display: flex; height: 100vh; overflow: hidden; }
 
 .sidebar {
   width: 230px;
@@ -201,6 +203,9 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
 }
 
 .sidebar-brand {
@@ -228,7 +233,9 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 .sidebar-user strong { display: block; color: var(--sidebar-text); font-size: 13px; }
 .sidebar-user span { color: var(--sidebar-muted); font-size: 12px; }
 
-.sidebar-nav { flex: 1; padding: 0.5rem 0; }
+/* La nav prend l'espace disponible et défile au besoin, sans repousser le
+   footer (bouton Déconnexion) hors de l'écran. min-height:0 indispensable en flex. */
+.sidebar-nav { flex: 1; padding: 0.5rem 0; overflow-y: auto; min-height: 0; }
 
 .nav-item {
   display: flex;
@@ -250,15 +257,20 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
   border-left-color: var(--or);
 }
 
+/* Toujours visible en bas de la sidebar (Déconnexion accessible sans scroll global) */
 .sidebar-footer {
   padding: 1rem 1.25rem;
   border-top: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
 }
 
+/* Contenu principal : zone de défilement indépendante de la sidebar */
 .main, .content {
   flex: 1;
+  height: 100vh;
   padding: 1.75rem 2rem;
   overflow-y: auto;
+  min-width: 0;
 }
 
 /* ---- TOPBAR ---- */
@@ -330,7 +342,12 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 }
 
 /* ---- TABLE ---- */
-.table-wrap { overflow-x: auto; }
+/* Conteneur scrollable : défilement vertical interne pour les tableaux longs
+   + horizontal pour les tableaux larges. Le thead reste visible (sticky). */
+.table-wrap {
+  overflow: auto;
+  max-height: calc(100vh - 240px);
+}
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 thead th {
   text-align: left;
@@ -343,6 +360,10 @@ thead th {
   letter-spacing: 0.05em;
   color: var(--aubergine-soft);
   white-space: nowrap;
+  /* En-tête figé pendant le défilement vertical du tableau */
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 tbody td {
   padding: 0.6rem 0.75rem;
@@ -522,4 +543,28 @@ code {
   color: var(--aubergine);
   padding: 0.1rem 0.35rem;
   border-radius: 4px;
+}
+
+/* ============================================================
+   RESPONSIVE — sur écran étroit (mobile/tablette), on repasse
+   à un défilement de page normal et la sidebar s'empile en haut.
+   ============================================================ */
+@media (max-width: 768px) {
+  .layout, .app-shell {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+  }
+  .sidebar-nav { overflow-y: visible; }
+  .main, .content {
+    height: auto;
+    overflow-y: visible;
+  }
+  /* Le tableau garde un scroll interne raisonnable sur mobile */
+  .table-wrap { max-height: 70vh; }
 }

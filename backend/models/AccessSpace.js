@@ -46,6 +46,13 @@ const accessSpaceSchema = new mongoose.Schema(
       type: String,
       default: "23:59",
     },
+    // Jeton du/des lecteur(s) de confiance pour cet espace (anti-énumération).
+    // Si défini (non vide), checkAccess exige que la requête fournisse ce jeton
+    // (en-tête X-Reader-Token ou champ readerToken). Vide = pas de contrôle device.
+    readerToken: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );

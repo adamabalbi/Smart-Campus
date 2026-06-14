@@ -484,7 +484,6 @@ function renderCard(card, cardApplication) {
     <div class="card-info" style="margin-bottom:1.25rem">
       <table class="profile-table">
         <tr><td>Numéro de carte</td><td><strong>${card.cardNumber}</strong></td></tr>
-        <tr><td>UID</td><td><code>${card.uid}</code></td></tr>
         <tr><td>Type</td><td>${card.type}</td></tr>
         <tr><td>Statut</td><td>${card.status === "active" ? "Active" : card.status}</td></tr>
         <tr><td>PIN temporaire</td><td>${card.mustChangePIN ? "À changer" : "Modifié"}</td></tr>

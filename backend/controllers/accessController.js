@@ -90,6 +90,16 @@ const checkAccess = async (req, res) => {
       return respond("denied", "space_inactive", { spaceLabel: space.label });
     }
 
+    // 2bis. Lecteur de confiance (anti-énumération) : si l'espace a un readerToken
+    // configuré, la requête doit le fournir (en-tête X-Reader-Token ou body).
+    // Rétrocompatible : les espaces sans readerToken ne sont pas affectés.
+    if (space.readerToken) {
+      const provided = req.headers["x-reader-token"] || (req.body && req.body.readerToken);
+      if (provided !== space.readerToken) {
+        return res.status(401).json({ message: "Lecteur non autorisé pour cet espace." });
+      }
+    }
+
     // 3. La carte existe
     const card = await Card.findOne({ uidHash }).populate("studentId");
     if (!card) {
@@ -185,7 +195,7 @@ const updateSpaceStatus = async (req, res) => {
 // PATCH /api/access/spaces/:key — modifier les règles d'un espace (admin)
 const updateSpaceRules = async (req, res) => {
   try {
-    const { allowedFilieres, allowedNiveaux, enforceSchedule, openTime, closeTime, status } = req.body;
+    const { allowedFilieres, allowedNiveaux, enforceSchedule, openTime, closeTime, status, readerToken } = req.body;
     const update = {};
 
     if (Array.isArray(allowedFilieres)) update.allowedFilieres = allowedFilieres.map(s => s.trim()).filter(Boolean);
@@ -194,6 +204,8 @@ const updateSpaceRules = async (req, res) => {
     if (openTime) update.openTime = openTime;
     if (closeTime) update.closeTime = closeTime;
     if (status && ["active", "inactive"].includes(status)) update.status = status;
+    // Jeton lecteur de confiance : "" pour le retirer, sinon la valeur fournie
+    if (typeof readerToken === "string") update.readerToken = readerToken.trim() || null;
 
     const space = await AccessSpace.findOneAndUpdate(
       { key: req.params.key },

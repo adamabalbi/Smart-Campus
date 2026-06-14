@@ -58,8 +58,8 @@ référence locale équivalente.
    demande, en complément du TTL automatique).
 2. **Pas d'export self-service** (droit à la portabilité).
    → *Recommandation* : endpoint `GET /api/student-space/export` renvoyant un JSON.
-3. **UID de carte stocké en clair** (`Card.uid`) en plus du hash.
-   → *Recommandation* : migration pour ne conserver que `uidHash` (cf. Axe 4).
+3. ~~**UID de carte stocké en clair**~~ → ✅ **Résolu** : le champ `uid` en clair
+   a été retiré du modèle et de la base ; seul `uidHash` (SHA-256) est conservé.
 4. **Conservation des transactions financières** non bornée dans le code.
    → *Recommandation* : politique d'archivage/anonymisation après la durée légale.
 5. **Information des personnes** : aucune mention d'information (politique de

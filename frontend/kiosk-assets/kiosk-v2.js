@@ -336,6 +336,7 @@ async function confirmRecharge() {
         uid: currentCard.uid,
         amount: selectedAmount,
         readerId: selectedKiosk ? selectedKiosk.id : 'kiosk-test',
+        idempotencyKey: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()),
         metadata: {
           kioskId: selectedKiosk ? selectedKiosk.id : 'kiosk-test',
           location: selectedKiosk ? selectedKiosk.label : 'Non précisée'

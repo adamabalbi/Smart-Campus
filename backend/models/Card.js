@@ -9,14 +9,11 @@ const cardSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    uid: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-    },
+    // RGPD/sécurité : l'UID n'est PAS stocké en clair. Seul le hash est persisté.
+    // Le champ virtuel `uid` (setter ci-dessous) calcule uidHash sans le stocker.
     uidHash: {
       type: String,
+      required: true,
       unique: true,
       index: true, // Index pour recherche rapide
     },
@@ -99,13 +96,16 @@ cardSchema.index({ uidHash: 1, status: 1, nfcEnabled: 1 });
 cardSchema.index({ studentId: 1, status: 1 });
 cardSchema.index({ lastNfcRead: -1 });
 
-// Middleware pre-save pour hash automatique de l'UID
-cardSchema.pre('save', function() {
-  if (this.isModified('uid') && this.uid) {
-    this.uidHash = crypto.createHash('sha256').update(this.uid.toLowerCase()).digest('hex');
+// Champ virtuel `uid` : en écriture, calcule uidHash (jamais stocké en clair).
+// Permet de continuer à faire `new Card({ uid })` / `Card.create({ uid })`.
+cardSchema.virtual('uid').set(function (value) {
+  if (value) {
+    this.uidHash = crypto.createHash('sha256').update(String(value).toLowerCase()).digest('hex');
   }
+});
 
-  // Increment read count on NFC read
+// Increment read count on NFC read
+cardSchema.pre('save', function() {
   if (this.isModified('lastNfcRead') && this.lastNfcRead) {
     this.nfcMetadata.readCount = (this.nfcMetadata.readCount || 0) + 1;
   }
@@ -161,7 +161,7 @@ cardSchema.methods.incrementPinAttempts = function() {
 
 // Méthodes statiques
 cardSchema.statics.findByUID = function(uid) {
-  const uidHash = crypto.createHash('sha256').update(uid).digest('hex');
+  const uidHash = crypto.createHash('sha256').update(String(uid).toLowerCase()).digest('hex');
   return this.findOne({
     uidHash: uidHash,
     status: 'active',

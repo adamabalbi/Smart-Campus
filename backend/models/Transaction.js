@@ -77,9 +77,18 @@ const transactionSchema = new mongoose.Schema(
     processedAt: {
       type: Date,
     },
+    // Clé d'idempotence (fournie par le client) : empêche le double-débit en cas
+    // de rejeu de la requête. Index unique partiel (ignore les documents sans clé).
+    idempotencyKey: {
+      type: String,
+      default: undefined,
+    },
   },
   { timestamps: true }
 );
+
+// Unicité de la clé d'idempotence quand elle est présente (sparse)
+transactionSchema.index({ idempotencyKey: 1 }, { unique: true, sparse: true });
 
 // Index pour optimiser les requêtes
 transactionSchema.index({ studentId: 1 });

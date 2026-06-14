@@ -5,6 +5,7 @@ const Wallet = require("../models/Wallet");
 const User = require("../models/User");
 const NFCLog = require("../models/NFCLog");
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 const { logAudit } = require("../services/auditService");
 
 // Instance du service NFC (sera initialisé dans server.js)
@@ -173,7 +174,7 @@ const validatePinWithCard = async (req, res) => {
 // Recharge via NFC (pour kiosques)
 const rechargeByNFC = async (req, res) => {
   try {
-    const { uid, amount, readerId, metadata = {} } = req.body;
+    const { uid, amount, readerId, metadata = {}, idempotencyKey } = req.body;
 
     if (!uid || !amount) {
       return res.status(400).json({
@@ -243,14 +244,20 @@ const rechargeByNFC = async (req, res) => {
       });
     }
 
-    // Mise à jour du solde
-    wallet.balance = newBalance;
-    wallet.lastRecharge = new Date();
-    await wallet.save();
+    const Transaction = require("../models/Transaction");
 
-    // SÉCURITÉ : Réinitialiser la validation PIN après la transaction
-    card.resetPinValidation();
-    await card.save();
+    // Idempotence : si la même clé a déjà été traitée, on renvoie la transaction
+    // existante sans re-créditer (anti double-traitement en cas de rejeu).
+    if (idempotencyKey) {
+      const existing = await Transaction.findOne({ idempotencyKey });
+      if (existing) {
+        return res.json({
+          success: true,
+          message: "Recharge déjà traitée (idempotence)",
+          data: { transaction: existing, wallet: { balance: wallet.balance } }
+        });
+      }
+    }
 
     // Génération d'un numéro de reçu unique (traçabilité)
     const receiptNumber = "REC-" + new Date().getFullYear() + "-" +
@@ -261,32 +268,52 @@ const rechargeByNFC = async (req, res) => {
     const kioskId       = metadata.kioskId || readerId || "kiosk-inconnu";
     const kioskLocation = metadata.location || "Localisation non précisée";
 
-    // Création de la transaction
-    const Transaction = require("../models/Transaction");
-    const transaction = await Transaction.create({
-      studentId: student._id,
-      cardId: card._id,
-      walletId: wallet._id,
-      agentId: null, // Transaction NFC/kiosque
-      type: "recharge",
-      channel: "kiosk",
-      amount: amount,
-      balanceBefore: balanceBefore,
-      balanceAfter: newBalance,
-      status: "validated",
-      description: `Recharge borne — ${kioskLocation}`,
-      pinVerified: true,
-      metadata: {
-        ...metadata,
-        nfcTransaction: true,
-        readerId: readerId,
-        kioskId: kioskId,
-        location: kioskLocation,
-        receiptNumber: receiptNumber,
-        uid: uid.substring(0, 4) + '***' // UID masqué pour sécurité
-      },
-      processedAt: new Date()
-    });
+    // Transaction atomique : crédit du wallet + transaction (pending -> validated)
+    const session = await mongoose.startSession();
+    let transaction;
+    try {
+      await session.withTransaction(async () => {
+        const created = await Transaction.create([{
+          studentId: student._id,
+          cardId: card._id,
+          walletId: wallet._id,
+          agentId: null,
+          type: "recharge",
+          channel: "kiosk",
+          amount: amount,
+          balanceBefore: balanceBefore,
+          balanceAfter: newBalance,
+          status: "pending",
+          description: `Recharge borne — ${kioskLocation}`,
+          pinVerified: true,
+          idempotencyKey: idempotencyKey || undefined,
+          metadata: {
+            ...metadata,
+            nfcTransaction: true,
+            readerId: readerId,
+            kioskId: kioskId,
+            location: kioskLocation,
+            receiptNumber: receiptNumber,
+            uid: uid.substring(0, 4) + '***'
+          },
+          processedAt: new Date()
+        }], { session });
+        transaction = created[0];
+
+        wallet.balance = newBalance;
+        wallet.lastRecharge = new Date();
+        await wallet.save({ session });
+
+        transaction.status = "validated";
+        await transaction.save({ session });
+      });
+    } finally {
+      await session.endSession();
+    }
+
+    // SÉCURITÉ : Réinitialiser la validation PIN après la transaction
+    card.resetPinValidation();
+    await card.save();
 
     // Log de l'événement
     await logNFCEvent(uid, 'recharge', true, null, readerId, {
@@ -376,7 +403,7 @@ const logNFCEvent = async (uid, action, success, errorMessage = null, readerId =
 // Paiement d'un service interne (cantine, bibliothèque, imprimerie) par carte NFC
 const payByNFC = async (req, res) => {
   try {
-    const { uid, pin, amount, service, serviceLabel, description, readerId, metadata = {} } = req.body;
+    const { uid, pin, amount, service, serviceLabel, description, readerId, metadata = {}, idempotencyKey } = req.body;
 
     // Validations de base
     if (!uid || !pin || !amount) {
@@ -457,42 +484,69 @@ const payByNFC = async (req, res) => {
     card.nfcFailures = 0;
     await card.save();
 
-    // 6. Débit du wallet
+    const Transaction = require("../models/Transaction");
+
+    // Idempotence : rejeu déjà traité → renvoyer la transaction existante (pas de re-débit)
+    if (idempotencyKey) {
+      const existing = await Transaction.findOne({ idempotencyKey });
+      if (existing) {
+        return res.json({
+          success: true,
+          message: "Paiement déjà traité (idempotence)",
+          aiDecision: null,
+          data: { transaction: existing, wallet: { balance: wallet.balance } }
+        });
+      }
+    }
+
+    // 6. Débit du wallet (atomique : solde + transaction)
     const newBalance = balanceBefore - amount;
-    wallet.balance = newBalance;
-    wallet.lastActivity = new Date();
-    await wallet.save();
 
     // Numéro de reçu (traçabilité)
     const receiptNumber = "PAY-" + new Date().getFullYear() + "-" +
       Date.now().toString(36).toUpperCase() +
       Math.floor(100 + Math.random() * 900);
 
-    // 7. Enregistrement de la transaction
-    const Transaction = require("../models/Transaction");
-    const transaction = await Transaction.create({
-      studentId: student._id,
-      cardId: card._id,
-      walletId: wallet._id,
-      agentId: null,
-      type: "payment",
-      channel: "api",
-      amount: amount,
-      balanceBefore: balanceBefore,
-      balanceAfter: newBalance,
-      status: "validated",
-      description: description || serviceLabel || `Paiement ${service || 'service'}`,
-      pinVerified: true,
-      metadata: {
-        ...metadata,
-        service: service || null,
-        serviceLabel: serviceLabel || null,
-        receiptNumber: receiptNumber,
-        readerId: readerId,
-        uid: uid.substring(0, 4) + '***'
-      },
-      processedAt: new Date()
-    });
+    const session = await mongoose.startSession();
+    let transaction;
+    try {
+      await session.withTransaction(async () => {
+        const created = await Transaction.create([{
+          studentId: student._id,
+          cardId: card._id,
+          walletId: wallet._id,
+          agentId: null,
+          type: "payment",
+          channel: "api",
+          amount: amount,
+          balanceBefore: balanceBefore,
+          balanceAfter: newBalance,
+          status: "pending",
+          description: description || serviceLabel || `Paiement ${service || 'service'}`,
+          pinVerified: true,
+          idempotencyKey: idempotencyKey || undefined,
+          metadata: {
+            ...metadata,
+            service: service || null,
+            serviceLabel: serviceLabel || null,
+            receiptNumber: receiptNumber,
+            readerId: readerId,
+            uid: uid.substring(0, 4) + '***'
+          },
+          processedAt: new Date()
+        }], { session });
+        transaction = created[0];
+
+        wallet.balance = newBalance;
+        wallet.lastActivity = new Date();
+        await wallet.save({ session });
+
+        transaction.status = "validated";
+        await transaction.save({ session });
+      });
+    } finally {
+      await session.endSession();
+    }
 
     await logNFCEvent(uid, 'payment', true, null, readerId, {
       amount: amount,

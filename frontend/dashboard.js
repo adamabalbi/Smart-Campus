@@ -714,7 +714,7 @@ async function loadCards() {
   el.innerHTML = `
     <table>
       <thead><tr>
-        <th>N° Carte</th><th>UID</th><th>Étudiant</th><th>Type</th>
+        <th>N° Carte</th><th>Étudiant</th><th>Type</th>
         <th>Statut</th><th>PIN</th><th>Émise le</th><th>Actions</th>
       </tr></thead>
       <tbody>
@@ -726,7 +726,6 @@ async function loadCards() {
 
           return `<tr>
             <td style="font-size:12px">${c.cardNumber}</td>
-            <td><code>${c.uid}</code></td>
             <td style="font-size:12px">${c.studentId ? `${c.studentId.prenom} ${c.studentId.nom}<br><span style="color:var(--muted)">${c.studentId.matricule}</span>` : "—"}</td>
             <td style="font-size:12px">${c.type}</td>
             <td>${badge(c.status)}</td>
@@ -870,7 +869,6 @@ document.getElementById("searchUidBtn")?.addEventListener("click", async () => {
   el.innerHTML = `
     <div style="font-size:13px;background:var(--bg);border-radius:6px;padding:.75rem">
       <div><strong>N°</strong> ${c.cardNumber}</div>
-      <div><strong>UID</strong> <code>${c.uid}</code></div>
       <div><strong>Statut</strong> ${badge(c.status)}</div>
       <div><strong>Étudiant</strong> ${s ? `${s.prenom} ${s.nom} (${s.matricule})` : "—"}</div>
       <div><strong>Tentatives PIN</strong> ${c.pinAttempts}/3</div>

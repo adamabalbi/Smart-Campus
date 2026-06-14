@@ -1,7 +1,11 @@
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 
 const Card    = require("../models/Card");
 const { logError } = require("../utils/secureLogger");
+
+// Hash SHA-256 de l'UID (l'UID n'est jamais stocké en clair : recherche par hash)
+const hashUID = (uid) => crypto.createHash("sha256").update(String(uid).toLowerCase()).digest("hex");
 const Student = require("../models/Student");
 const User    = require("../models/User");
 const Wallet  = require("../models/Wallet");
@@ -62,7 +66,7 @@ const createCard = async (req, res) => {
       });
     }
 
-    const existingCardUID = await Card.findOne({ uid });
+    const existingCardUID = await Card.findOne({ uidHash: hashUID(uid) });
 
     if (existingCardUID) {
       return res.status(400).json({
@@ -132,7 +136,6 @@ Plateforme Smart Campus`,
       card: {
         id: card._id,
         studentId: card.studentId,
-        uid: card.uid,
         cardNumber: card.cardNumber,
         type: card.type,
         status: card.status,
@@ -203,7 +206,7 @@ const getCardByUID = async (req, res) => {
   try {
     const { uid } = req.params;
 
-    const card = await Card.findOne({ uid })
+    const card = await Card.findOne({ uidHash: hashUID(uid) })
       .populate("studentId", "matricule nom prenom email filiere niveau status")
       .select("-pinHash");
 
@@ -236,7 +239,7 @@ const verifyCardPIN = async (req, res) => {
       });
     }
 
-    const card = await Card.findOne({ uid });
+    const card = await Card.findOne({ uidHash: hashUID(uid) });
 
     if (!card) {
       return res.status(404).json({
@@ -423,7 +426,6 @@ const updateCardStatus = async (req, res) => {
       message: "Statut de la carte mis à jour avec succès.",
       card: {
         id: card._id,
-        uid: card.uid,
         cardNumber: card.cardNumber,
         status: card.status,
       },

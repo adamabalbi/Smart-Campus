@@ -206,7 +206,8 @@ async function doPayment() {
         service: CFG.service,
         serviceLabel: CFG.title,
         description: description,
-        readerId: CFG.service
+        readerId: CFG.service,
+        idempotencyKey: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random())
       })
     });
     const data = await res.json();

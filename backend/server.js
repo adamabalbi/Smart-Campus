@@ -48,25 +48,25 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 
-// Headers de sécurité de base partout. Le CSP est appliqué par route
-// (strictCSP) sur les pages dont le JavaScript est externalisé.
-app.use(helmet({ contentSecurityPolicy: false }));
-
-// CSP stricte appliquée uniquement aux pages dont le JS est externalisé.
-// (script-src 'self' : aucun script inline ; connect-src autorise le WebSocket NFC)
-const strictCSP = helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    scriptSrc: ["'self'"],
-    styleSrc: ["'self'", "https:", "'unsafe-inline'"],
-    fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "data:"],
-    imgSrc: ["'self'", "data:"],
-    connectSrc: ["'self'", "ws:", "wss:"],
-    objectSrc: ["'none'"],
-    baseUri: ["'self'"],
-    frameAncestors: ["'self'"],
+// Headers de sécurité + CSP, appliqués GLOBALEMENT en un seul helmet (cohérent).
+// Les pages servies par Express (/kiosk-v2, /verify-email) n'ont aucun script
+// inline : script-src 'self' suffit. Les réponses JSON de l'API ne sont pas
+// affectées par le CSP. Le frontend (Netlify) a sa propre configuration.
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],                                  // aucun script inline
+      styleSrc: ["'self'", "https:", "'unsafe-inline'"],      // Google Fonts / FA / styles inline
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "data:"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'", "ws:", "wss:"],                  // WebSocket NFC
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      frameAncestors: ["'self'"],
+    },
   },
-});
+}));
 
 // Fichiers statiques du kiosque (JS externalisé pour compatibilité CSP)
 app.use("/kiosk-assets", express.static(path.join(__dirname, "../frontend/kiosk-assets")));
@@ -96,7 +96,7 @@ app.get("/", (req, res) => {
 });
 
 // Route pour le kiosque NFC complet et fonctionnel
-app.get("/kiosk-v2", strictCSP, (req, res) => {
+app.get("/kiosk-v2", (req, res) => {
   res.send(`
 <!DOCTYPE html>
 <html lang="fr">

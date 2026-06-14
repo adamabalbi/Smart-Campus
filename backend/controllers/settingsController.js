@@ -1,4 +1,5 @@
 const Settings = require("../models/Settings");
+const { logError } = require("../utils/secureLogger");
 const { invalidateCache } = require("../utils/getSettings");
 
 const getOrCreate = async () => {
@@ -12,7 +13,7 @@ const getSettings = async (req, res) => {
     const settings = await getOrCreate();
     return res.status(200).json({ settings });
   } catch (error) {
-    console.error("Erreur getSettings :", error);
+    logError("Erreur getSettings", error);
     return res.status(500).json({ message: "Erreur lors de la récupération des paramètres." });
   }
 };
@@ -39,7 +40,7 @@ const updateSettings = async (req, res) => {
       settings,
     });
   } catch (error) {
-    console.error("Erreur updateSettings :", error);
+    logError("Erreur updateSettings", error);
     return res.status(500).json({ message: "Erreur lors de la mise à jour des paramètres." });
   }
 };

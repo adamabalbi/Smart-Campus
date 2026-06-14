@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const { logError } = require("../utils/secureLogger");
 const Card = require("../models/Card");
 const Student = require("../models/Student");
 const AccessSpace = require("../models/AccessSpace");
@@ -22,7 +23,7 @@ async function logAccess(data) {
   try {
     await AccessLog.create(data);
   } catch (e) {
-    console.error("Erreur log accès:", e.message);
+    logError("Erreur log accès", e.message);
   }
 }
 
@@ -141,7 +142,7 @@ const checkAccess = async (req, res) => {
     // ✅ Accès autorisé
     return respond("authorized", "ok", baseExtra);
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur checkAccess", error);
+    logError("Erreur checkAccess", error);
     return res.status(500).json({ message: "Erreur serveur lors de la vérification d'accès." });
   }
 };
@@ -205,7 +206,7 @@ const updateSpaceRules = async (req, res) => {
 
     return res.json({ message: `Règles de ${space.label} mises à jour.`, space });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur updateSpaceRules", error);
+    logError("Erreur updateSpaceRules", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };
@@ -244,7 +245,7 @@ const getAccessLogs = async (req, res) => {
       pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur getAccessLogs", error);
+    logError("Erreur getAccessLogs", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };

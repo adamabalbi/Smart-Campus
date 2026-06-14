@@ -1,4 +1,5 @@
 const User    = require("../models/User");
+const { logError } = require("../utils/secureLogger");
 const Card    = require("../models/Card");
 const Student = require("../models/Student");
 const Alert   = require("../models/Alert");
@@ -45,7 +46,7 @@ const getStats = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Erreur getStats :", error);
+    logError("Erreur getStats", error);
     return res.status(500).json({ message: "Erreur lors de la récupération des statistiques." });
   }
 };

@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 
 const Card    = require("../models/Card");
+const { logError } = require("../utils/secureLogger");
 const Student = require("../models/Student");
 const User    = require("../models/User");
 const Wallet  = require("../models/Wallet");
@@ -95,7 +96,7 @@ const createCard = async (req, res) => {
         monthlyLimit: 500000,
       });
     } catch (walletErr) {
-      console.warn("Erreur création portefeuille :", walletErr.message);
+      logError("Erreur création portefeuille", walletErr);
       // Ne pas bloquer la création de carte si le portefeuille échoue
     }
 
@@ -121,7 +122,7 @@ Cordialement,
 Plateforme Smart Campus`,
       });
     } catch (emailErr) {
-      console.warn("Email carte non envoyé :", emailErr.message);
+      logError("Email carte non envoyé", emailErr);
     }
 
     await logAudit({ req, action: "card_created", targetType: "Card", targetId: card._id, description: `Création de la carte ${card.cardNumber} pour ${student.prenom} ${student.nom} (${student.matricule})`, newValue: { cardNumber: card.cardNumber, type: card.type, studentId: card.studentId } });
@@ -142,7 +143,7 @@ Plateforme Smart Campus`,
       },
     });
   } catch (error) {
-    console.error("Erreur createCard :", error);
+    logError("Erreur createCard", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la création de la carte.",
     });
@@ -163,7 +164,7 @@ const getCards = async (req, res) => {
       cards,
     });
   } catch (error) {
-    console.error("Erreur getCards :", error);
+    logError("Erreur getCards", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la récupération des cartes.",
     });
@@ -190,7 +191,7 @@ const getCardById = async (req, res) => {
       card,
     });
   } catch (error) {
-    console.error("Erreur getCardById :", error);
+    logError("Erreur getCardById", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la récupération de la carte.",
     });
@@ -217,7 +218,7 @@ const getCardByUID = async (req, res) => {
       card,
     });
   } catch (error) {
-    console.error("Erreur getCardByUID :", error);
+    logError("Erreur getCardByUID", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la recherche par UID.",
     });
@@ -290,7 +291,7 @@ const verifyCardPIN = async (req, res) => {
       pinVerified: true,
     });
   } catch (error) {
-    console.error("Erreur verifyCardPIN :", error);
+    logError("Erreur verifyCardPIN", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la vérification du PIN.",
     });
@@ -340,7 +341,7 @@ const changeCardPIN = async (req, res) => {
       message: "PIN de la carte modifié avec succès.",
     });
   } catch (error) {
-    console.error("Erreur changeCardPIN :", error);
+    logError("Erreur changeCardPIN", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la modification du PIN.",
     });
@@ -382,7 +383,7 @@ const resetCardPIN = async (req, res) => {
       message: "PIN réinitialisé avec succès par l'administrateur.",
     });
   } catch (error) {
-    console.error("Erreur resetCardPIN :", error);
+    logError("Erreur resetCardPIN", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la réinitialisation du PIN.",
     });
@@ -428,7 +429,7 @@ const updateCardStatus = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Erreur updateCardStatus :", error);
+    logError("Erreur updateCardStatus", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la mise à jour du statut de la carte.",
     });
@@ -483,7 +484,7 @@ const updateCard = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Erreur updateCard :", error);
+    logError("Erreur updateCard", error);
     return res.status(500).json({ message: "Erreur serveur lors de la mise à jour." });
   }
 };

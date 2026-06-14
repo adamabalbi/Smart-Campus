@@ -22,8 +22,8 @@ const validateLogin = [
     .withMessage('Email invalide')
     .trim(),
   body('password')
-    .isLength({ min: 1 })
-    .withMessage('Mot de passe requis')
+    .isLength({ min: 8 })
+    .withMessage('Mot de passe invalide (8 caractères minimum)')
     .isLength({ max: 128 })
     .withMessage('Mot de passe trop long'),
   handleValidationErrors

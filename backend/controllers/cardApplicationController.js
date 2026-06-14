@@ -1,4 +1,5 @@
 const CardApplication = require("../models/CardApplication");
+const { logError } = require("../utils/secureLogger");
 const sendEmail       = require("../utils/sendEmail");
 
 // ── 1. Lister les demandes (admin) ────────────────────────────────────────────
@@ -14,7 +15,7 @@ const getApplications = async (req, res) => {
 
     return res.status(200).json({ count: applications.length, applications });
   } catch (error) {
-    console.error("Erreur getApplications :", error);
+    logError("Erreur getApplications", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };
@@ -63,7 +64,7 @@ Plateforme Smart Campus`,
       message: "Dossier d'inscription approuvé. L'étudiant a été notifié par email.",
     });
   } catch (error) {
-    console.error("Erreur approveApplication :", error);
+    logError("Erreur approveApplication", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };
@@ -107,7 +108,7 @@ Plateforme Smart Campus`,
 
     return res.status(200).json({ message: "Demande rejetée." });
   } catch (error) {
-    console.error("Erreur rejectApplication :", error);
+    logError("Erreur rejectApplication", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };

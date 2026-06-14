@@ -1,10 +1,16 @@
 const bcrypt = require("bcryptjs");
+const { logError } = require("../utils/secureLogger");
+const crypto = require("crypto");
+const mongoose = require("mongoose");
 const Wallet = require("../models/Wallet");
 const Transaction = require("../models/Transaction");
 const Student = require("../models/Student");
 const Card = require("../models/Card");
 const { getSettings } = require("../utils/getSettings");
 const { logAudit } = require("../services/auditService");
+
+// Hash SHA-256 de l'UID (le modele Card stocke uidHash, pas l'UID en clair pour la recherche)
+const hashUID = (uid) => crypto.createHash("sha256").update(String(uid).toLowerCase()).digest("hex");
 
 // Récupérer le portefeuille d'un étudiant
 const getWallet = async (req, res) => {
@@ -26,7 +32,7 @@ const getWallet = async (req, res) => {
       wallet,
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur getWallet ", error);
+    logError("Erreur getWallet ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la récupération du portefeuille.",
     });
@@ -37,14 +43,10 @@ const getWallet = async (req, res) => {
 const getWalletByCardUID = async (req, res) => {
   try {
     const { uid } = req.params;
-    console.log("🔍 Recherche carte avec UID:", uid);
-    console.log("👤 Utilisateur authentifié:", req.user ? req.user.email : "non authentifié");
 
-    const card = await Card.findOne({ uid: uid.toUpperCase() });
-    console.log("🔗 Carte trouvée:", card ? `ID: ${card._id}, Status: ${card.status}` : "Aucune carte trouvée");
+    const card = await Card.findOne({ uidHash: hashUID(uid) });
 
     if (!card) {
-      console.log("❌ Carte introuvable pour UID:", uid);
       return res.status(404).json({
         message: "Carte introuvable.",
       });
@@ -54,23 +56,20 @@ const getWalletByCardUID = async (req, res) => {
       .populate("studentId", "nom prenom matricule email")
       .populate("cardId", "uid status");
 
-    console.log("💳 Portefeuille trouvé:", wallet ? `ID: ${wallet._id}, Balance: ${wallet.balance}` : "Aucun portefeuille trouvé");
 
     if (!wallet) {
-      console.log("❌ Portefeuille introuvable pour carte ID:", card._id);
       return res.status(404).json({
         message: "Portefeuille introuvable pour cette carte.",
       });
     }
 
-    console.log("✅ Succès - Portefeuille récupéré pour:", wallet.studentId.nom);
     return res.status(200).json({
       message: "Portefeuille récupéré avec succès.",
       wallet,
       card,
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur getWalletByCardUID ", error);
+    logError("Erreur getWalletByCardUID ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la récupération du portefeuille.",
     });
@@ -79,10 +78,6 @@ const getWalletByCardUID = async (req, res) => {
 
 // Vérifications avant recharge
 const validateRechargeConditions = async (card, student, wallet, pin, amount) => {
-  console.log("🔐 DEBUG: Validation des conditions de recharge");
-  console.log("🔐 DEBUG: Card PIN défini:", !!card?.pinHash);
-  console.log("🔐 DEBUG: PIN saisi:", pin ? "Oui" : "Non");
-  console.log("🔐 DEBUG: Card PIN (début):", card?.pinHash?.substring(0, 10) + "...");
 
   const errors = [];
 
@@ -104,12 +99,9 @@ const validateRechargeConditions = async (card, student, wallet, pin, amount) =>
   // Vérifier le PIN si fourni
   if (pin && card) {
     if (!card.pinHash) {
-      console.log("❌ DEBUG: PIN de la carte non défini en base!");
       errors.push("PIN de la carte non configuré.");
     } else {
-      console.log("🔐 DEBUG: Comparaison PIN en cours...");
       const isPinValid = await bcrypt.compare(pin, card.pinHash);
-      console.log("🔐 DEBUG: PIN valide:", isPinValid);
       if (!isPinValid) {
         errors.push("Code PIN incorrect.");
       }
@@ -132,20 +124,17 @@ const validateRechargeConditions = async (card, student, wallet, pin, amount) =>
 // Recharge par agent
 const rechargeByAgent = async (req, res) => {
   try {
-    console.log("💳 DEBUG: Début recharge par agent");
     const { uid, amount, pin } = req.body;
     const agentId = req.user._id;
-    console.log("💳 DEBUG: Données reçues - UID:", uid, "Montant:", amount, "Agent:", req.user.email);
 
     if (!uid || !amount || !pin) {
-      console.log("❌ DEBUG: Données manquantes", { uid: !!uid, amount: !!amount, pin: !!pin });
       return res.status(400).json({
         message: "UID de carte, montant et PIN requis.",
       });
     }
 
     // Récupérer la carte et les données associées
-    const card = await Card.findOne({ uid: uid.toUpperCase() });
+    const card = await Card.findOne({ uidHash: hashUID(uid) });
     if (!card) {
       return res.status(404).json({
         message: "Carte introuvable.",
@@ -171,27 +160,39 @@ const rechargeByAgent = async (req, res) => {
     const balanceBefore = wallet.balance;
     const balanceAfter = balanceBefore + rechargeAmount;
 
-    // Créer la transaction
-    const transaction = await Transaction.create({
-      studentId: student._id,
-      cardId: card._id,
-      walletId: wallet._id,
-      agentId,
-      type: "recharge",
-      channel: "agent",
-      amount: rechargeAmount,
-      balanceBefore,
-      balanceAfter,
-      status: "validated",
-      description: "Recharge effectuée par un agent habilité",
-      pinVerified: true,
-      processedAt: new Date(),
-    });
+    // Transaction atomique : création + mise à jour du solde dans une session
+    // MongoDB. Statut "pending" -> "validated" seulement si tout réussit.
+    const session = await mongoose.startSession();
+    let transaction;
+    try {
+      await session.withTransaction(async () => {
+        const created = await Transaction.create([{
+          studentId: student._id,
+          cardId: card._id,
+          walletId: wallet._id,
+          agentId,
+          type: "recharge",
+          channel: "agent",
+          amount: rechargeAmount,
+          balanceBefore,
+          balanceAfter,
+          status: "pending",
+          description: "Recharge effectuée par un agent habilité",
+          pinVerified: true,
+          processedAt: new Date(),
+        }], { session });
+        transaction = created[0];
 
-    // Mettre à jour le solde du portefeuille
-    wallet.balance = balanceAfter;
-    wallet.lastActivity = new Date();
-    await wallet.save();
+        wallet.balance = balanceAfter;
+        wallet.lastActivity = new Date();
+        await wallet.save({ session });
+
+        transaction.status = "validated";
+        await transaction.save({ session });
+      });
+    } finally {
+      await session.endSession();
+    }
 
     await logAudit({ req, actor: { _id: student.userId, role: "student" }, action: "recharge", targetType: "Transaction", targetId: transaction._id, description: `Recharge agent de ${rechargeAmount} XOF — ${student.prenom} ${student.nom} (${student.matricule})`, oldValue: { balance: balanceBefore }, newValue: { balance: balanceAfter } });
 
@@ -210,7 +211,7 @@ const rechargeByAgent = async (req, res) => {
       },
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur rechargeByAgent ", error);
+    logError("Erreur rechargeByAgent ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la recharge.",
     });
@@ -229,7 +230,7 @@ const rechargeByKiosk = async (req, res) => {
     }
 
     // Récupérer la carte et les données associées
-    const card = await Card.findOne({ uid: uid.toUpperCase() });
+    const card = await Card.findOne({ uidHash: hashUID(uid) });
     if (!card) {
       return res.status(404).json({
         message: "Carte introuvable.",
@@ -255,31 +256,42 @@ const rechargeByKiosk = async (req, res) => {
     const balanceBefore = wallet.balance;
     const balanceAfter = balanceBefore + rechargeAmount;
 
-    // Créer la transaction
-    const transaction = await Transaction.create({
-      studentId: student._id,
-      cardId: card._id,
-      walletId: wallet._id,
-      agentId: null,
-      type: "recharge",
-      channel: "kiosk",
-      amount: rechargeAmount,
-      balanceBefore,
-      balanceAfter,
-      status: "validated",
-      description: "Recharge effectuée via borne électronique",
-      pinVerified: true,
-      processedAt: new Date(),
-      metadata: {
-        kioskId: req.ip, // Utiliser l'IP comme identifiant temporaire
-        receiptNumber: `REC${Date.now()}`,
-      },
-    });
+    // Transaction atomique (session MongoDB) : statut "pending" -> "validated"
+    const session = await mongoose.startSession();
+    let transaction;
+    try {
+      await session.withTransaction(async () => {
+        const created = await Transaction.create([{
+          studentId: student._id,
+          cardId: card._id,
+          walletId: wallet._id,
+          agentId: null,
+          type: "recharge",
+          channel: "kiosk",
+          amount: rechargeAmount,
+          balanceBefore,
+          balanceAfter,
+          status: "pending",
+          description: "Recharge effectuée via borne électronique",
+          pinVerified: true,
+          processedAt: new Date(),
+          metadata: {
+            kioskId: req.ip, // Utiliser l'IP comme identifiant temporaire
+            receiptNumber: `REC${Date.now()}`,
+          },
+        }], { session });
+        transaction = created[0];
 
-    // Mettre à jour le solde du portefeuille
-    wallet.balance = balanceAfter;
-    wallet.lastActivity = new Date();
-    await wallet.save();
+        wallet.balance = balanceAfter;
+        wallet.lastActivity = new Date();
+        await wallet.save({ session });
+
+        transaction.status = "validated";
+        await transaction.save({ session });
+      });
+    } finally {
+      await session.endSession();
+    }
 
     await logAudit({ req, actor: { _id: student.userId, role: "student" }, action: "recharge", targetType: "Transaction", targetId: transaction._id, description: `Recharge kiosk de ${rechargeAmount} XOF — ${student.prenom} ${student.nom} (${student.matricule})`, oldValue: { balance: balanceBefore }, newValue: { balance: balanceAfter } });
 
@@ -299,7 +311,7 @@ const rechargeByKiosk = async (req, res) => {
       },
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur rechargeByKiosk ", error);
+    logError("Erreur rechargeByKiosk ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la recharge.",
     });
@@ -334,7 +346,7 @@ const getTransactionHistory = async (req, res) => {
       },
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur getTransactionHistory ", error);
+    logError("Erreur getTransactionHistory ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la récupération de l'historique.",
     });
@@ -416,7 +428,7 @@ const getAgentHistory = async (req, res) => {
       },
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur getAgentHistory ", error);
+    logError("Erreur getAgentHistory ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la récupération de l'historique.",
     });
@@ -456,7 +468,7 @@ const diagnosticWallets = async (req, res) => {
       data: diagnosticData
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur diagnosticWallets ", error);
+    logError("Erreur diagnosticWallets ", error);
     return res.status(500).json({
       message: "Erreur serveur lors du diagnostic.",
     });
@@ -500,7 +512,7 @@ const createMissingWallets = async (req, res) => {
       totalCards: cards.length
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur createMissingWallets ", error);
+    logError("Erreur createMissingWallets ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la création des portefeuilles.",
     });
@@ -539,7 +551,7 @@ const createWallet = async (req, res) => {
       wallet,
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur createWallet ", error);
+    logError("Erreur createWallet ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la création du portefeuille.",
     });

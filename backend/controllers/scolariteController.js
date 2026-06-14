@@ -1,4 +1,5 @@
 const Student         = require("../models/Student");
+const { logError } = require("../utils/secureLogger");
 const Card            = require("../models/Card");
 const CardApplication = require("../models/CardApplication");
 const sendEmail       = require("../utils/sendEmail");
@@ -20,7 +21,7 @@ const getEnrollmentRequests = async (req, res) => {
 
     return res.status(200).json({ count: applications.length, applications });
   } catch (error) {
-    console.error("Erreur getEnrollmentRequests :", error);
+    logError("Erreur getEnrollmentRequests", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };
@@ -49,7 +50,7 @@ const getEnrolledStudents = async (req, res) => {
 
     return res.status(200).json({ count: result.length, students: result });
   } catch (error) {
-    console.error("Erreur getEnrolledStudents :", error);
+    logError("Erreur getEnrolledStudents", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };
@@ -83,7 +84,7 @@ const updateStatutScolarite = async (req, res) => {
       commentaireScolarite: student.commentaireScolarite,
     });
   } catch (error) {
-    console.error("Erreur updateStatutScolarite :", error);
+    logError("Erreur updateStatutScolarite", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };
@@ -139,7 +140,7 @@ Service de Scolarité — Smart Campus`,
 
     return res.status(200).json({ message: "Inscription validée. Étudiant notifié par email." });
   } catch (error) {
-    console.error("Erreur validateEnrollment :", error);
+    logError("Erreur validateEnrollment", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };
@@ -185,7 +186,7 @@ Service de Scolarité — Smart Campus`,
 
     return res.status(200).json({ message: "Demande refusée. Étudiant notifié." });
   } catch (error) {
-    console.error("Erreur rejectEnrollment :", error);
+    logError("Erreur rejectEnrollment", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };

@@ -1,10 +1,14 @@
 const bcrypt = require("bcryptjs");
+const { logError } = require("../utils/secureLogger");
 const jwt = require("jsonwebtoken");
 const generateTempPassword = require("../utils/generateTempPassword");
 
 const User = require("../models/User");
 const OTPVerification = require("../models/OTPVerification");
 const Session = require("../models/Session");
+
+// Coût bcrypt configurable sans redéploiement (Render env). Défaut 10.
+const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || "10", 10);
 
 const generateOTP = require("../utils/generateOTP");
 const sendEmail = require("../utils/sendEmail");
@@ -48,13 +52,44 @@ const loginUser = async (req, res) => {
       });
     }
 
+    // Verrouillage temporaire après trop d'échecs (anti force-brute par compte)
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      const minutes = Math.ceil((user.lockedUntil - new Date()) / 60000);
+      await logAudit({ req, actor: user, action: "login_failed", targetType: "User", targetId: user._id, description: `Connexion refusée — compte verrouillé (${email})`, status: "failure" });
+      return res.status(423).json({
+        message: `Compte temporairement verrouillé suite à trop de tentatives. Réessayez dans ${minutes} minute(s).`,
+      });
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      await logAudit({ req, actor: user, action: "login_failed", targetType: "User", targetId: user._id, description: `Mot de passe incorrect (${email})`, status: "failure" });
+      const MAX_ATTEMPTS = 5;
+      const LOCK_MINUTES = 30;
+      user.loginAttempts = (user.loginAttempts || 0) + 1;
+      let locked = false;
+      if (user.loginAttempts >= MAX_ATTEMPTS) {
+        user.lockedUntil = new Date(Date.now() + LOCK_MINUTES * 60 * 1000);
+        user.loginAttempts = 0;
+        locked = true;
+      }
+      await user.save();
+      await logAudit({ req, actor: user, action: "login_failed", targetType: "User", targetId: user._id, description: `Mot de passe incorrect (${email})${locked ? " — compte verrouillé 30 min" : ""}`, status: "failure" });
+      if (locked) {
+        return res.status(423).json({
+          message: "Trop de tentatives échouées. Compte verrouillé pendant 30 minutes.",
+        });
+      }
       return res.status(401).json({
         message: "Email ou mot de passe incorrect.",
       });
+    }
+
+    // Succès : réinitialiser le compteur de tentatives
+    if (user.loginAttempts !== 0 || user.lockedUntil) {
+      user.loginAttempts = 0;
+      user.lockedUntil = null;
+      await user.save();
     }
 
     const otpCode = generateOTP();
@@ -84,7 +119,7 @@ const loginUser = async (req, res) => {
       otpRequired: true,
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur loginUser ", error);
+    logError("Erreur loginUser ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la connexion.",
     });
@@ -184,7 +219,7 @@ const verifyOTP = async (req, res) => {
       }
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur verifyOTP ", error);
+    logError("Erreur verifyOTP ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la vérification OTP.",
     });
@@ -220,7 +255,7 @@ const logoutUser = async (req, res) => {
       message: "Déconnexion réussie. Session invalidée.",
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur logoutUser ", error);
+    logError("Erreur logoutUser ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la déconnexion.",
     });
@@ -264,7 +299,7 @@ const createUserByAdmin = async (req, res) => {
 
     // Génération d'un mot de passe temporaire
     const tempPassword = generateTempPassword();
-    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+    const hashedPassword = await bcrypt.hash(tempPassword, BCRYPT_ROUNDS);
 
     const user = await User.create({
       nom,
@@ -312,7 +347,7 @@ Plateforme Smart Campus`,
       },
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur createUserByAdmin ", error);
+    logError("Erreur createUserByAdmin ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la création de l'utilisateur.",
     });
@@ -332,7 +367,7 @@ const getUsers = async (req, res) => {
       users,
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur getUsers ", error);
+    logError("Erreur getUsers ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la récupération des utilisateurs.",
     });
@@ -387,7 +422,7 @@ const updateUserStatus = async (req, res) => {
       },
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur updateUserStatus ", error);
+    logError("Erreur updateUserStatus ", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la mise à jour du statut.",
     });
@@ -444,7 +479,7 @@ const updateUserRole = async (req, res) => {
       },
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur updateUserRole ", error);
+    logError("Erreur updateUserRole ", error);
     return res.status(500).json({ message: "Erreur serveur lors de la mise à jour du rôle." });
   }
 };
@@ -475,7 +510,7 @@ const deleteUser = async (req, res) => {
 
     return res.status(200).json({ message: "Utilisateur supprimé avec succès." });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur deleteUser ", error);
+    logError("Erreur deleteUser ", error);
     return res.status(500).json({ message: "Erreur serveur lors de la suppression." });
   }
 };
@@ -499,6 +534,14 @@ const changePassword = async (req, res) => {
       });
     }
 
+    // Politique de complexité : au moins 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial
+    const complexity = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/;
+    if (!complexity.test(newPassword)) {
+      return res.status(400).json({
+        message: "Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial.",
+      });
+    }
+
     const user = await User.findById(userId);
 
     if (!user) {
@@ -515,7 +558,7 @@ const changePassword = async (req, res) => {
       });
     }
 
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    const hashedNewPassword = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
 
     user.password = hashedNewPassword;
     user.mustChangePassword = false;
@@ -536,7 +579,7 @@ const changePassword = async (req, res) => {
       },
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur changePassword ", error);
+    logError("Erreur changePassword ", error);
     return res.status(500).json({
       message: "Erreur serveur lors du changement de mot de passe.",
     });

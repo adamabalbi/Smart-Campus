@@ -53,6 +53,13 @@ const accessLogSchema = new mongoose.Schema(
       default: Date.now,
       index: true,
     },
+    // RGPD : conservation limitée des données de déplacement (90 jours).
+    // L'index TTL (expireAfterSeconds: 0) supprime le document à la date expiresAt.
+    expiresAt: {
+      type: Date,
+      default: () => new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+      index: { expireAfterSeconds: 0 },
+    },
   },
   { timestamps: false }
 );

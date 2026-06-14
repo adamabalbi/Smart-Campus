@@ -1,5 +1,6 @@
 const bcrypt          = require("bcryptjs");
 const Student         = require("../models/Student");
+const { logError } = require("../utils/secureLogger");
 const Card            = require("../models/Card");
 const Wallet          = require("../models/Wallet");
 const CardApplication = require("../models/CardApplication");
@@ -26,7 +27,7 @@ const getMyProfile = async (req, res) => {
       cardApplication: cardApplication || null,
     });
   } catch (error) {
-    console.error("Erreur getMyProfile :", error);
+    logError("Erreur getMyProfile", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };
@@ -50,7 +51,7 @@ const updateMyProfile = async (req, res) => {
       telephone: student.telephone,
     });
   } catch (error) {
-    console.error("Erreur updateMyProfile :", error);
+    logError("Erreur updateMyProfile", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };
@@ -133,7 +134,7 @@ const getMyNotifications = async (req, res) => {
 
     return res.status(200).json({ notifications });
   } catch (error) {
-    console.error("Erreur getMyNotifications :", error);
+    logError("Erreur getMyNotifications", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };
@@ -176,7 +177,7 @@ const submitCardApplication = async (req, res) => {
       application,
     });
   } catch (error) {
-    console.error("Erreur submitCardApplication :", error);
+    logError("Erreur submitCardApplication", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };
@@ -225,7 +226,7 @@ const changeMyPIN = async (req, res) => {
 
     return res.status(200).json({ message: "PIN modifié avec succès." });
   } catch (error) {
-    console.error("Erreur changeMyPIN :", error);
+    logError("Erreur changeMyPIN", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };

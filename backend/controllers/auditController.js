@@ -1,4 +1,5 @@
 const AuditLog = require("../models/AuditLog");
+const { logError } = require("../utils/secureLogger");
 
 // GET /api/audit
 // Filtres : action, actorRole, targetType, status, actorId, targetId,
@@ -39,7 +40,7 @@ const getAuditLogs = async (req, res) => {
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {
-    console.error("Erreur getAuditLogs :", error);
+    logError("Erreur getAuditLogs", error);
     return res.status(500).json({ message: "Erreur lors de la récupération de l'historique." });
   }
 };
@@ -50,7 +51,7 @@ const getAuditActions = async (req, res) => {
     const actions = await AuditLog.distinct("action");
     return res.json({ actions: actions.sort() });
   } catch (error) {
-    console.error("Erreur getAuditActions :", error);
+    logError("Erreur getAuditActions", error);
     return res.status(500).json({ message: "Erreur lors de la récupération des actions." });
   }
 };

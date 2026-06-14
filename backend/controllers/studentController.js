@@ -1,4 +1,6 @@
 const bcrypt = require("bcryptjs");
+const { logError } = require("../utils/secureLogger");
+const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || "10", 10);
 
 const User            = require("../models/User");
 const Student         = require("../models/Student");
@@ -45,7 +47,7 @@ const createStudent = async (req, res) => {
     }
 
     const tempPassword = generateTempPassword();
-    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+    const hashedPassword = await bcrypt.hash(tempPassword, BCRYPT_ROUNDS);
 
     const user = await User.create({
       nom,
@@ -108,7 +110,7 @@ Plateforme Smart Campus`,
       },
     });
   } catch (error) {
-    console.error("Erreur createStudent :", error);
+    logError("Erreur createStudent", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la création de l'étudiant.",
     });
@@ -128,7 +130,7 @@ const getStudents = async (req, res) => {
       students,
     });
   } catch (error) {
-    console.error("Erreur getStudents :", error);
+    logError("Erreur getStudents", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la récupération des étudiants.",
     });
@@ -156,7 +158,7 @@ const getStudentById = async (req, res) => {
       student,
     });
   } catch (error) {
-    console.error("Erreur getStudentById :", error);
+    logError("Erreur getStudentById", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la récupération de l'étudiant.",
     });
@@ -204,7 +206,7 @@ const updateStudent = async (req, res) => {
       student,
     });
   } catch (error) {
-    console.error("Erreur updateStudent :", error);
+    logError("Erreur updateStudent", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la modification de l'étudiant.",
     });
@@ -251,7 +253,7 @@ const updateStudentStatus = async (req, res) => {
       student,
     });
   } catch (error) {
-    console.error("Erreur updateStudentStatus :", error);
+    logError("Erreur updateStudentStatus", error);
     return res.status(500).json({
       message: "Erreur serveur lors de la mise à jour du statut étudiant.",
     });
@@ -281,7 +283,7 @@ const deleteStudent = async (req, res) => {
 
     return res.status(200).json({ message: "Étudiant et toutes ses données supprimés avec succès." });
   } catch (error) {
-    console.error("Erreur deleteStudent :", error);
+    logError("Erreur deleteStudent", error);
     return res.status(500).json({ message: "Erreur serveur lors de la suppression." });
   }
 };

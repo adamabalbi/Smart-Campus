@@ -37,8 +37,14 @@ const verifyTurnstile = async (req, res, next) => {
     }
     return next();
   } catch (err) {
-    // En cas d'indisponibilité de Cloudflare, on évite de bloquer totalement le service.
-    console.warn("⚠️  Turnstile indisponible:", err.message);
+    // Comportement en cas d'indisponibilité de Cloudflare (CWE-636 : Not Failing Securely).
+    // TURNSTILE_STRICT_MODE=true (recommandé en prod) → on refuse plutôt que de
+    // laisser passer ; sinon (dev) on laisse passer pour ne pas bloquer le service.
+    const { logError } = require("../utils/secureLogger");
+    logError("Turnstile indisponible", err);
+    if (process.env.TURNSTILE_STRICT_MODE === "true") {
+      return res.status(503).json({ message: "Service de vérification temporairement indisponible. Réessayez." });
+    }
     return next();
   }
 };

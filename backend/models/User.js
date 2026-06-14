@@ -50,6 +50,15 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    // Verrouillage de compte (anti force-brute par compte, complète le rate-limit par IP)
+    loginAttempts: {
+      type: Number,
+      default: 0,
+    },
+    lockedUntil: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

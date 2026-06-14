@@ -1,5 +1,7 @@
 const crypto  = require("crypto");
+const { logError } = require("../utils/secureLogger");
 const bcrypt   = require("bcryptjs");
+const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || "10", 10);
 
 const StudentRegistration = require("../models/StudentRegistration");
 const User    = require("../models/User");
@@ -66,7 +68,7 @@ Plateforme Smart Campus`,
       registrationId: registration._id,
     });
   } catch (error) {
-    console.error("Erreur submitRegistration :", error);
+    logError("Erreur submitRegistration", error);
     return res.status(500).json({ message: "Erreur serveur lors de l'inscription." });
   }
 };
@@ -135,7 +137,7 @@ const verifyEmail = async (req, res) => {
       "#16a34a"
     ));
   } catch (error) {
-    console.error("Erreur verifyEmail :", error);
+    logError("Erreur verifyEmail", error);
     return res.status(500).send("<p>Erreur serveur.</p>");
   }
 };
@@ -156,7 +158,7 @@ const getRegistrations = async (req, res) => {
       registrations,
     });
   } catch (error) {
-    console.error("Erreur getRegistrations :", error);
+    logError("Erreur getRegistrations", error);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 };
@@ -200,7 +202,7 @@ const approveRegistration = async (req, res) => {
     const matricule = await generateMatricule();
 
     const tempPassword   = generateTempPassword();
-    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+    const hashedPassword = await bcrypt.hash(tempPassword, BCRYPT_ROUNDS);
 
     const user = await User.create({
       nom:                registration.nom,
@@ -265,7 +267,7 @@ Plateforme Smart Campus`,
       student: { id: student._id, matricule, email: student.email },
     });
   } catch (error) {
-    console.error("Erreur approveRegistration :", error);
+    logError("Erreur approveRegistration", error);
     return res.status(500).json({ message: "Erreur serveur lors de l'approbation." });
   }
 };
@@ -309,7 +311,7 @@ Plateforme Smart Campus`,
 
     return res.status(200).json({ message: "Inscription rejetée." });
   } catch (error) {
-    console.error("Erreur rejectRegistration :", error);
+    logError("Erreur rejectRegistration", error);
     return res.status(500).json({ message: "Erreur serveur lors du rejet." });
   }
 };

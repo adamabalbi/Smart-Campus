@@ -1,4 +1,5 @@
 const Card = require("../models/Card");
+const { logError } = require("../utils/secureLogger");
 const Student = require("../models/Student");
 const Wallet = require("../models/Wallet");
 const User = require("../models/User");
@@ -90,7 +91,7 @@ const authenticateByCard = async (req, res) => {
     });
 
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur authentification NFC", error);
+    logError("Erreur authentification NFC", error);
     await logNFCEvent(req.body.uid, 'auth', false, error.message, req.body.readerId);
     res.status(500).json({
       message: "Erreur serveur lors de l'authentification NFC"
@@ -161,7 +162,7 @@ const validatePinWithCard = async (req, res) => {
     });
 
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur validation PIN NFC", error);
+    logError("Erreur validation PIN NFC", error);
     await logNFCEvent(req.body.uid, 'pin_validation', false, error.message, req.body.readerId);
     res.status(500).json({
       message: "Erreur serveur lors de la validation PIN"
@@ -318,7 +319,7 @@ const rechargeByNFC = async (req, res) => {
     });
 
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur recharge NFC", error);
+    logError("Erreur recharge NFC", error);
     await logNFCEvent(req.body.uid, 'recharge', false, error.message, req.body.readerId);
     res.status(500).json({
       message: "Erreur serveur lors de la recharge NFC"
@@ -347,7 +348,7 @@ const getReadersStatus = async (req, res) => {
     });
 
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur statut lecteurs", error);
+    logError("Erreur statut lecteurs", error);
     res.status(500).json({
       message: "Erreur serveur lors de la récupération du statut"
     });
@@ -368,7 +369,7 @@ const logNFCEvent = async (uid, action, success, errorMessage = null, readerId =
       metadata: metadata
     });
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur log NFC", error);
+    logError("Erreur log NFC", error);
   }
 };
 
@@ -544,11 +545,10 @@ const payByNFC = async (req, res) => {
           reason: "Paiement détecté comme suspect par le modèle IA",
           metadata: { features },
         });
-        console.log(`🚨 Alerte créée — paiement suspect (score: ${score})`);
         await logAudit({ req, actor: { _id: student.userId, role: "student" }, action: "ai_alert_created", targetType: "Alert", targetId: alert._id, description: `Alerte IA — paiement suspect de ${amount} XOF (score ${score}, sévérité ${severity}) — ${student.prenom} ${student.nom}`, newValue: { score, severity, transactionId: transaction._id } });
       }
     } catch (aiErr) {
-      console.warn("⚠️  Analyse IA ignorée:", aiErr.message);
+      logError("⚠️  Analyse IA ignorée", aiErr);
     }
 
     res.json({
@@ -573,7 +573,7 @@ const payByNFC = async (req, res) => {
     });
 
   } catch (error) {
-    const { logError } = require("../utils/secureLogger"); logError("Erreur paiement NFC", error);
+    logError("Erreur paiement NFC", error);
     await logNFCEvent(req.body.uid, 'payment', false, error.message, req.body.readerId);
     res.status(500).json({ message: "Erreur serveur lors du paiement." });
   }

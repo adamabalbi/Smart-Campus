@@ -22,11 +22,6 @@
     <h1 class="svc-title"><i class="fa-solid fa-door-open"></i> Contrôle d'accès</h1>
     <p class="svc-subtitle">Vérification d'accès aux espaces du campus</p>
 
-    <div style="display:flex; gap:0.6rem; justify-content:center; margin-bottom:1.5rem;">
-      <button class="btn" id="navCheck"><i class="fa-solid fa-circle-check"></i> Vérification</button>
-      <button class="btn" id="navHistory"><i class="fa-solid fa-clock-rotate-left"></i> Historique</button>
-    </div>
-
     <!-- Sélection de l'espace + scan -->
     <div id="step-scan" class="svc-step">
       <div class="svc-card">
@@ -63,18 +58,6 @@
       </div>
     </div>
 
-    <!-- Historique des accès -->
-    <div id="step-history" class="svc-step hidden">
-      <div class="svc-card">
-        <div style="display:flex; gap:0.6rem; margin-bottom:1rem; flex-wrap:wrap;">
-          <input type="date" id="histDate" class="input" style="flex:1; font-size:0.95rem; padding:0.6rem;">
-          <button class="btn" id="histRefresh">Actualiser</button>
-        </div>
-        <div id="historyTable" style="overflow-x:auto;">
-          <div style="text-align:center; opacity:0.8;">Chargement...</div>
-        </div>
-      </div>
-    </div>
   </div>
 
   <script src="config.js"></script>
@@ -165,62 +148,12 @@
       showStep("step-scan");
     }
 
-    // --- Historique des accès ---
-    async function loadHistory() {
-      const el = $("historyTable");
-      el.innerHTML = `<div style="text-align:center; opacity:0.8;">Chargement...</div>`;
-      const token = localStorage.getItem("token");
-      if (!token) {
-        el.innerHTML = `<div style="text-align:center; opacity:0.9;">Connectez-vous en tant qu'agent de sécurité pour voir l'historique.</div>`;
-        return;
-      }
-      const date = $("histDate").value;
-      let query = date ? `?date=${date}` : "";
-      try {
-        const res = await fetch(`${API}/access/logs${query}`, {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
-        if (res.status === 401) {
-          el.innerHTML = `<div style="text-align:center;">Session expirée. Reconnectez-vous.</div>`;
-          return;
-        }
-        const data = await res.json();
-        const logs = data.logs || [];
-        if (!logs.length) { el.innerHTML = `<div style="text-align:center; opacity:0.9;">Aucun accès enregistré.</div>`; return; }
-
-        el.innerHTML = `
-          <table style="width:100%; border-collapse:collapse; font-size:13px;">
-            <thead><tr style="text-align:left; border-bottom:1px solid rgba(255,255,255,0.3);">
-              <th style="padding:0.5rem;">Date</th><th>Étudiant</th><th>Matricule</th><th>Espace</th><th>Décision</th><th>Motif</th>
-            </tr></thead>
-            <tbody>
-              ${logs.map(l => `
-                <tr style="border-bottom:1px solid rgba(255,255,255,0.12);">
-                  <td style="padding:0.5rem; font-size:11px;">${new Date(l.timestamp).toLocaleString('fr-FR')}</td>
-                  <td>${l.studentName}</td>
-                  <td>${l.studentMatricule}</td>
-                  <td>${l.spaceLabel || l.spaceKey || '—'}</td>
-                  <td>${l.decision === 'authorized'
-                    ? '<span style="color:#5F8D4E; font-weight:600;">Autorisé</span>'
-                    : '<span style="color:#B85C5C; font-weight:600;">Refusé</span>'}</td>
-                  <td style="font-size:11px;">${l.messageFr}</td>
-                </tr>
-              `).join("")}
-            </tbody>
-          </table>`;
-      } catch(e) {
-        el.innerHTML = `<div style="text-align:center;">Erreur de chargement.</div>`;
-      }
-    }
-
     document.addEventListener("DOMContentLoaded", () => {
       loadSpaces();
       $("scanBtn").addEventListener("click", scanCard);
       $("checkBtn").addEventListener("click", checkAccess);
       $("nextBtn").addEventListener("click", reset);
       $("navCheck").addEventListener("click", () => showStep("step-scan"));
-      $("navHistory").addEventListener("click", () => { showStep("step-history"); loadHistory(); });
-      $("histRefresh").addEventListener("click", loadHistory);
     });
   </script>
 </body>

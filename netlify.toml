@@ -8,10 +8,37 @@
   publish = "frontend"
   command = ""
 
-# En-têtes de sécurité de base pour les pages servies
+# En-têtes de sécurité pour toutes les pages servies
 [[headers]]
   for = "/*"
   [headers.values]
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "SAMEORIGIN"
     Referrer-Policy = "strict-origin-when-cross-origin"
+    # Force HTTPS pendant 2 ans (inclut les sous-domaines)
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    # Restreint les API navigateur sensibles
+    Permissions-Policy = "geolocation=(), camera=(), microphone=(), payment=()"
+    Cross-Origin-Opener-Policy = "same-origin"
+    # Content Security Policy.
+    # 'unsafe-inline' est requis car le site statique utilise des scripts/styles
+    # et handlers (onclick) inline ; pas d'étape de build pour générer des nonces.
+    # connect-src autorise le backend Render (HTTPS + WebSocket wss).
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data:; connect-src 'self' https://smart-campus-jgn5.onrender.com wss://smart-campus-jgn5.onrender.com; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+
+# Les ressources versionnées (CSS/JS/polices) peuvent être mises en cache longtemps.
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Les pages HTML ne doivent jamais être mises en cache (contenu dynamique/auth).
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-store, max-age=0"

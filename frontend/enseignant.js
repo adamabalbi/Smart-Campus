@@ -5,6 +5,10 @@ const token = localStorage.getItem("token");
 if (!token) window.location.href = "index.html";
 
 const STATUS_FR = { present: "Présent", late: "Retard", absent: "Absent", excused: "Excusé" };
+// Échappe le HTML avant insertion via innerHTML (anti-XSS stocké).
+const esc = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (c) => (
+  { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+));
 let currentCourseId = null;
 let currentCourseCode = null;
 
@@ -27,7 +31,7 @@ async function loadCourses() {
   const { courses } = await res.json();
   const sel = document.getElementById("courseSelect");
   if (!courses.length) { sel.innerHTML = '<option value="">Aucun cours assigné</option>'; return; }
-  sel.innerHTML = courses.map((c) => `<option value="${c._id}" data-code="${c.code}">${c.code} — ${c.name}</option>`).join("");
+  sel.innerHTML = courses.map((c) => `<option value="${esc(c._id)}" data-code="${esc(c.code)}">${esc(c.code)} — ${esc(c.name)}</option>`).join("");
   currentCourseId = courses[0]._id;
   currentCourseCode = courses[0].code;
   loadLive();
@@ -46,8 +50,8 @@ async function loadLive() {
   const body = document.getElementById("liveBody");
   body.innerHTML = data.attendance.map((a) => `
     <tr>
-      <td>${a.matricule}</td>
-      <td>${a.prenom} ${a.nom}</td>
+      <td>${esc(a.matricule)}</td>
+      <td>${esc(a.prenom)} ${esc(a.nom)}</td>
       <td><span class="tag t-${a.status}">${STATUS_FR[a.status]}</span></td>
       <td>${a.checkInTime ? new Date(a.checkInTime).toLocaleTimeString("fr-FR") : "—"}</td>
     </tr>`).join("");
@@ -62,8 +66,8 @@ async function loadAlerts() {
   if (!alerts.length) { body.innerHTML = '<tr><td colspan="5" style="opacity:.7;">Aucun étudiant sous le seuil. 👍</td></tr>'; return; }
   body.innerHTML = alerts.map((a) => `
     <tr>
-      <td>${a.student ? a.student.matricule : "—"}</td>
-      <td>${a.student ? a.student.prenom + " " + a.student.nom : "—"}</td>
+      <td>${a.student ? esc(a.student.matricule) : "—"}</td>
+      <td>${a.student ? esc(a.student.prenom) + " " + esc(a.student.nom) : "—"}</td>
       <td>${a.total}</td>
       <td>${a.attended}</td>
       <td style="color:#E0918F;font-weight:700;">${a.rate}%</td>

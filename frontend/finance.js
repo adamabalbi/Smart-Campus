@@ -4,6 +4,10 @@ const token = localStorage.getItem("token");
 if (!token) window.location.href = "index.html";
 
 const fmt = (n) => Number(n || 0).toLocaleString("fr-FR") + " XOF";
+// Échappe le HTML avant insertion via innerHTML (anti-XSS stocké).
+const esc = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (c) => (
+  { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+));
 const STATUS_FR = { paid: "Soldé", partial: "Partiel", unpaid: "Non payé", exempted: "Exonéré" };
 const STATUS_CLASS = { paid: "st-paid", partial: "st-partial", unpaid: "st-unpaid", exempted: "st-exempted" };
 
@@ -74,14 +78,14 @@ async function loadList() {
   body.innerHTML = fees.map((f) => {
     const s = f.studentId || {};
     return `<tr>
-      <td>${s.prenom || ""} ${s.nom || ""}<br><span style="opacity:.6;font-size:.8rem;">${s.matricule || ""}</span></td>
-      <td>${s.filiere || "—"} / ${s.niveau || ""}</td>
-      <td>${f.academicYear}</td>
+      <td>${esc(s.prenom)} ${esc(s.nom)}<br><span style="opacity:.6;font-size:.8rem;">${esc(s.matricule)}</span></td>
+      <td>${esc(s.filiere || "—")} / ${esc(s.niveau)}</td>
+      <td>${esc(f.academicYear)}</td>
       <td>${fmt(f.totalAmount)}</td>
       <td>${fmt(f.amountPaid)}</td>
       <td>${fmt(f.remainingAmount)}</td>
       <td><span class="fee-status ${STATUS_CLASS[f.status]}">${STATUS_FR[f.status]}</span></td>
-      <td><span class="link" data-student="${s._id}">Détail</span></td>
+      <td><span class="link" data-student="${esc(s._id)}">Détail</span></td>
     </tr>`;
   }).join("");
   body.querySelectorAll(".link[data-student]").forEach((el) => {
@@ -96,12 +100,12 @@ async function openDetail(studentId) {
   const { student, fees } = await res.json();
   const body = document.getElementById("detailBody");
   body.innerHTML = `
-    <p><strong>${student.prenom} ${student.nom}</strong> — ${student.matricule}<br>
-    <span style="opacity:.7;">${student.filiere} / ${student.niveau} — ${student.email}</span><br>
-    <span class="note" style="font-size:.78rem; opacity:.6;">ID: ${student._id}</span></p>
+    <p><strong>${esc(student.prenom)} ${esc(student.nom)}</strong> — ${esc(student.matricule)}<br>
+    <span style="opacity:.7;">${esc(student.filiere)} / ${esc(student.niveau)} — ${esc(student.email)}</span><br>
+    <span class="note" style="font-size:.78rem; opacity:.6;">ID: ${esc(student._id)}</span></p>
     ${fees.map((f) => `
       <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:.8rem; margin-top:.8rem;">
-        <div style="display:flex; justify-content:space-between;"><strong>${f.academicYear}</strong>
+        <div style="display:flex; justify-content:space-between;"><strong>${esc(f.academicYear)}</strong>
           <span class="fee-status ${STATUS_CLASS[f.status]}">${STATUS_FR[f.status]}</span></div>
         <div class="svc-info-row"><span>Total</span><strong>${fmt(f.totalAmount)}</strong></div>
         <div class="svc-info-row"><span>Payé</span><strong>${fmt(f.amountPaid)}</strong></div>
@@ -147,8 +151,8 @@ document.getElementById("payBtn").onclick = async () => {
     const r = data.data.receipt;
     out.innerHTML = `<div class="svc-card" style="background:rgba(95,141,78,0.18);">
       <strong><i class="fa-solid fa-circle-check"></i> Paiement encaissé</strong>
-      <div class="svc-info-row"><span>Reçu</span><strong>${r.receiptNumber}</strong></div>
-      <div class="svc-info-row"><span>Étudiant</span><strong>${r.studentName} (${r.matricule})</strong></div>
+      <div class="svc-info-row"><span>Reçu</span><strong>${esc(r.receiptNumber)}</strong></div>
+      <div class="svc-info-row"><span>Étudiant</span><strong>${esc(r.studentName)} (${esc(r.matricule)})</strong></div>
       <div class="svc-info-row"><span>Montant</span><strong>${fmt(r.amount)}</strong></div>
       <div class="svc-info-row"><span>Reste dû</span><strong>${fmt(r.remaining)}</strong></div>
       <div class="svc-info-row"><span>Statut</span><strong>${STATUS_FR[r.status]}</strong></div>

@@ -9,6 +9,10 @@ const token = localStorage.getItem("token");
 if (!token) window.location.href = "index.html";
 
 const spaces = new Map(); // key -> { label, spaceType, capacity, currentOccupancy }
+// Échappe le HTML avant insertion via innerHTML (anti-XSS stocké).
+const esc = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (c) => (
+  { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+));
 
 async function api(path, opts = {}) {
   const res = await fetch(API + path, {
@@ -43,17 +47,17 @@ function renderSpaces() {
     const rate = cap > 0 ? Math.round((occ / cap) * 100) : null;
     const full = cap > 0 && occ >= cap;
     const cls = classFor(rate, full);
-    if (full) alerts.push(`${s.label} : capacité atteinte (${occ}/${cap})`);
-    else if (rate != null && rate >= 80) alerts.push(`${s.label} : ${rate}% (${occ}/${cap})`);
+    if (full) alerts.push(`${esc(s.label)} : capacité atteinte (${occ}/${cap})`);
+    else if (rate != null && rate >= 80) alerts.push(`${esc(s.label)} : ${rate}% (${occ}/${cap})`);
 
     const card = document.createElement("div");
     card.className = "space-card " + cls;
     card.innerHTML = `
-      <div class="space-type">${SPACE_TYPE_FR[s.spaceType] || s.spaceType}</div>
-      <h3>${s.label}</h3>
+      <div class="space-type">${esc(SPACE_TYPE_FR[s.spaceType] || s.spaceType)}</div>
+      <h3>${esc(s.label)}</h3>
       <div class="occ-num">${occ}${cap > 0 ? ` <span style="font-size:1rem;opacity:.6;">/ ${cap}</span>` : ""}</div>
       ${cap > 0 ? `<div class="bar ${cls}"><span style="width:${Math.min(100, rate)}%"></span></div>` : '<div style="font-size:.85rem;opacity:.6;">Sans limite de capacité</div>'}
-      <span class="reset-link" data-key="${s.key}">Réinitialiser à 0</span>`;
+      <span class="reset-link" data-key="${esc(s.key)}">Réinitialiser à 0</span>`;
     grid.appendChild(card);
   });
 
@@ -83,7 +87,7 @@ async function loadOccupancy() {
   sel.innerHTML = '<option value="">Tous les espaces</option>';
   list.forEach((s) => {
     spaces.set(s.key, s);
-    sel.insertAdjacentHTML("beforeend", `<option value="${s.key}">${s.label}</option>`);
+    sel.insertAdjacentHTML("beforeend", `<option value="${esc(s.key)}">${esc(s.label)}</option>`);
   });
   sel.value = current;
   renderSpaces();
@@ -112,8 +116,8 @@ async function loadLogs() {
   body.innerHTML = logs.map((l) => `
     <tr>
       <td>${new Date(l.timestamp).toLocaleTimeString("fr-FR")}</td>
-      <td>${l.studentName || "—"}<br><span style="opacity:.6;font-size:.8rem;">${l.studentMatricule || ""}</span></td>
-      <td>${l.spaceLabel || l.spaceKey || "—"}</td>
+      <td>${esc(l.studentName || "—")}<br><span style="opacity:.6;font-size:.8rem;">${esc(l.studentMatricule)}</span></td>
+      <td>${esc(l.spaceLabel || l.spaceKey || "—")}</td>
       <td>${l.direction === "out" ? "Sortie" : "Entrée"}</td>
       <td><span class="tag ${l.decision === "authorized" ? "ok" : "ko"}">${l.decision === "authorized" ? "Autorisé" : "Refusé"}</span></td>
       <td>${REASON_FR[l.reason] || l.reason}</td>

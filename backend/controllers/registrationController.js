@@ -21,6 +21,22 @@ const submitRegistration = async (req, res) => {
       return res.status(400).json({ message: "Veuillez remplir tous les champs obligatoires." });
     }
 
+    // Sécurité : valider le format des champs texte libres saisis publiquement.
+    // Empêche l'injection de balises HTML/scripts (XSS stocké rendu plus tard
+    // dans les tableaux de bord du personnel). Mêmes règles que la création de
+    // comptes staff (validateUserCreation).
+    const NAME_RE = /^[a-zA-ZÀ-ÿ\s'-]{2,50}$/;
+    const TEXT_RE = /^[a-zA-ZÀ-ÿ0-9\s'._-]{1,60}$/;
+    if (!NAME_RE.test(nom) || !NAME_RE.test(prenom)) {
+      return res.status(400).json({ message: "Nom/prénom invalide (2 à 50 lettres)." });
+    }
+    if (!TEXT_RE.test(filiere) || !TEXT_RE.test(niveau) || (departement && !TEXT_RE.test(departement))) {
+      return res.status(400).json({ message: "Filière, niveau ou département invalide." });
+    }
+    if (telephone && !/^[0-9 +().-]{6,20}$/.test(telephone)) {
+      return res.status(400).json({ message: "Numéro de téléphone invalide." });
+    }
+
     const existingReg  = await StudentRegistration.findOne({ email });
     const existingUser = await User.findOne({ email });
 

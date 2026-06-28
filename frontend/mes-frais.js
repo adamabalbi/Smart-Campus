@@ -4,6 +4,10 @@ const token = localStorage.getItem("token");
 if (!token) window.location.href = "index.html";
 
 const fmt = (n) => Number(n || 0).toLocaleString("fr-FR") + " XOF";
+// Échappe le HTML avant insertion via innerHTML (anti-XSS stocké).
+const esc = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (c) => (
+  { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+));
 const STATUS_FR = { paid: "Soldé", partial: "Paiement partiel", unpaid: "Non payé", exempted: "Exonéré (boursier)" };
 const STATUS_CLASS = { paid: "st-paid", partial: "st-partial", unpaid: "st-unpaid", exempted: "st-exempted" };
 const INST_FR = { paid: "Payée", pending: "À venir", late: "En retard" };
@@ -30,7 +34,7 @@ function renderFee(fee) {
   return `
     <div class="svc-card">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2 style="margin:0;">Année ${fee.academicYear}</h2>
+        <h2 style="margin:0;">Année ${esc(fee.academicYear)}</h2>
         <span class="fee-status ${STATUS_CLASS[fee.status]}">${STATUS_FR[fee.status]}</span>
       </div>
       <div class="bar"><span style="width:${rate}%"></span></div>

@@ -19,7 +19,7 @@ const getWallet = async (req, res) => {
 
     const wallet = await Wallet.findOne({ studentId })
       .populate("studentId", "nom prenom matricule email")
-      .populate("cardId", "uid status");
+      .populate("cardId", "cardNumber status");
 
     if (!wallet) {
       return res.status(404).json({
@@ -54,7 +54,7 @@ const getWalletByCardUID = async (req, res) => {
 
     const wallet = await Wallet.findOne({ cardId: card._id })
       .populate("studentId", "nom prenom matricule email")
-      .populate("cardId", "uid status");
+      .populate("cardId", "cardNumber status");
 
 
     if (!wallet) {
@@ -440,17 +440,17 @@ const diagnosticWallets = async (req, res) => {
   try {
     const cards = await Card.find()
       .populate("studentId", "nom prenom matricule")
-      .select("uid studentId status");
+      .select("cardNumber studentId status");
 
     const wallets = await Wallet.find()
       .populate("studentId", "nom prenom matricule")
-      .populate("cardId", "uid")
+      .populate("cardId", "status")
       .select("studentId cardId balance status");
 
     const diagnosticData = cards.map(card => {
       const wallet = wallets.find(w => w.cardId && w.cardId._id.toString() === card._id.toString());
       return {
-        cardUID: card.uid,
+        cardNumber: card.cardNumber,
         studentName: card.studentId ? `${card.studentId.prenom} ${card.studentId.nom}` : "N/A",
         studentMatricule: card.studentId ? card.studentId.matricule : "N/A",
         cardStatus: card.status,

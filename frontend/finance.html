@@ -78,6 +78,10 @@
     <div class="panel" id="panel-pay">
       <div class="svc-card">
         <p class="svc-subtitle">Encaissement par carte NFC de l'étudiant (carte + PIN obligatoires).</p>
+        <div style="display:flex; gap:.5rem; align-items:center; margin-bottom:.6rem;">
+          <button class="btn" id="scanBtn"><i class="fa-solid fa-tower-broadcast"></i> Scanner la carte</button>
+          <span id="scanStatus" style="font-size:.9rem; opacity:.85;">Approchez la carte du lecteur, ou saisissez l'UID.</span>
+        </div>
         <div class="row2">
           <div><label class="field-label">UID de la carte</label><input id="payUid" class="input" placeholder="ex: a89fb4ef"></div>
           <div><label class="field-label">Code PIN</label><input id="payPin" type="password" class="input" maxlength="6" placeholder="••••"></div>

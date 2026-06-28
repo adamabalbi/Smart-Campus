@@ -1,5 +1,6 @@
 // Espace agent financier — gestion des frais de scolarité.
 const API = (window.SMART_CAMPUS_CONFIG && window.SMART_CAMPUS_CONFIG.API_BASE_URL) || "http://localhost:5000/api";
+const WS_URL = (window.SMART_CAMPUS_CONFIG && window.SMART_CAMPUS_CONFIG.WS_BASE_URL) || "ws://localhost:5000";
 const token = localStorage.getItem("token");
 if (!token) window.location.href = "index.html";
 
@@ -131,6 +132,35 @@ async function openDetail(studentId) {
   document.getElementById("detailModal").style.display = "flex";
 }
 document.getElementById("closeDetail").onclick = () => (document.getElementById("detailModal").style.display = "none");
+
+// --- Scan NFC (lecture de l'UID via WebSocket, comme les kiosques) ---
+let scanWs = null;
+let scanning = false;
+const scanStatus = document.getElementById("scanStatus");
+
+function ensureScanWs() {
+  if (scanWs && (scanWs.readyState === WebSocket.OPEN || scanWs.readyState === WebSocket.CONNECTING)) return;
+  try { scanWs = new WebSocket(WS_URL); } catch { scanStatus.textContent = "Lecteur indisponible (WebSocket)."; return; }
+  scanWs.onmessage = (ev) => {
+    if (!scanning) return;
+    try {
+      const msg = JSON.parse(ev.data);
+      if (msg.type === "cardDetected" && msg.uid) {
+        document.getElementById("payUid").value = msg.uid;
+        scanning = false;
+        scanStatus.innerHTML = `<span style="color:#8FBE7A;"><i class="fa-solid fa-circle-check"></i> Carte détectée (${esc(msg.uid.substring(0, 4))}***). Saisissez le PIN.</span>`;
+        document.getElementById("payPin").focus();
+      }
+    } catch { /* ignore */ }
+  };
+  scanWs.onclose = () => { if (scanning) scanStatus.textContent = "Connexion au lecteur perdue."; };
+}
+
+document.getElementById("scanBtn").onclick = () => {
+  ensureScanWs();
+  scanning = true;
+  scanStatus.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> En attente de la carte…';
+};
 
 // --- Encaisser ---
 document.getElementById("payBtn").onclick = async () => {

@@ -46,7 +46,13 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({
+  limit: '10mb',
+  // Conserve le corps brut pour la vérification de signature HMAC (webhook ESP).
+  verify: (req, _res, buf) => { req.rawBody = buf.toString("utf8"); },
+}));
+// Corps texte (import CSV brut depuis le SI ESP).
+app.use(express.text({ type: ["text/csv", "text/plain"], limit: '10mb' }));
 
 // Headers de sécurité + CSP, appliqués GLOBALEMENT en un seul helmet (cohérent).
 // Les pages servies par Express (/kiosk-v2, /verify-email) n'ont aucun script
@@ -93,6 +99,11 @@ app.use('/api/registration/verify-email', authLimiter);
 
 app.get("/", (req, res) => {
   res.send("API Smart Campus fonctionne correctement");
+});
+
+// Documentation OpenAPI (pour intégration par d'autres systèmes UCAD)
+app.get("/api/docs/swagger.json", (req, res) => {
+  res.sendFile(path.join(__dirname, "swagger.json"));
 });
 
 // Route pour le kiosque NFC complet et fonctionnel
@@ -333,6 +344,10 @@ app.use("/api/registration",   require("./routes/registrationRoutes"));
 app.use("/api/student-space",      require("./routes/studentSpaceRoutes"));
 app.use("/api/card-applications",  require("./routes/cardApplicationRoutes"));
 app.use("/api/scolarite",          require("./routes/scolariteRoutes"));
+app.use("/api/scholarship",        require("./routes/scholarshipRoutes"));
+app.use("/api/courses",            require("./routes/courseRoutes"));
+app.use("/api/attendance",         require("./routes/attendanceRoutes"));
+app.use("/api/integration",        require("./routes/integrationRoutes"));
 app.use("/api/nfc",              require("./routes/nfcRoutes"));
 app.use("/api/services",         require("./routes/serviceRoutes"));
 app.use("/api/access",           require("./routes/accessRoutes"));
@@ -356,6 +371,9 @@ const broadcastToKiosks = (payload) => {
     }
   });
 };
+
+// Rend le broadcast disponible aux contrôleurs (occupations d'accès, présences…)
+require("./services/realtimeService").setBroadcaster(broadcastToKiosks);
 
 // --- Endpoint d'ingestion NFC pour le nfc-agent distant ---
 // En production, le lecteur ACR122U tourne sur un poste local (nfc-agent) qui

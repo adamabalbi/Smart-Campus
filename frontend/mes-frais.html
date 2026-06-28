@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mes frais de scolarité — Smart Campus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="service-payment.css">
+  <style>
+    .fee-status { display:inline-block; padding:.25rem .7rem; border-radius:8px; font-size:.85rem; font-weight:600; }
+    .st-paid { background:rgba(95,141,78,0.3); } .st-partial { background:rgba(224,164,88,0.3); }
+    .st-unpaid { background:rgba(184,92,92,0.3); } .st-exempted { background:rgba(120,144,200,0.3); }
+    .bar { height:10px; background:rgba(255,255,255,0.15); border-radius:5px; overflow:hidden; margin:.6rem 0; }
+    .bar > span { display:block; height:100%; background:#5F8D4E; }
+    table { width:100%; border-collapse:collapse; font-size:.9rem; }
+    th,td { text-align:left; padding:.5rem; border-bottom:1px solid rgba(255,255,255,0.1); }
+    .big-amount { font-family:'Fraunces',serif; font-size:2rem; font-weight:700; }
+    .note { font-size:.85rem; opacity:.75; }
+  </style>
+</head>
+<body>
+  <div class="svc-container" style="max-width:760px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <h1 class="svc-title"><i class="fa-solid fa-graduation-cap"></i> Mes frais de scolarité</h1>
+        <p class="svc-subtitle" id="studentName">—</p>
+      </div>
+      <button class="btn" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i></button>
+    </div>
+
+    <div id="feesContainer"><p style="opacity:.7;">Chargement…</p></div>
+
+    <div class="svc-card note" style="margin-top:1.5rem;">
+      <i class="fa-solid fa-circle-info"></i> Le paiement s'effectue avec votre carte NFC et votre code PIN
+      à une borne du campus ou auprès d'un agent financier. Vous recevrez un reçu par email.
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="mes-frais.js"></script>
+</body>
+</html>

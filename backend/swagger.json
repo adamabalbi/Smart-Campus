@@ -1,0 +1,330 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Smart Campus API",
+    "version": "2.0.0",
+    "description": "API de la plateforme Smart Campus (ESP/UCAD). Couvre l'authentification MFA, le contrôle d'accès multi-niveaux, les paiements (portefeuille, services, scolarité), la gestion des présences et l'interconnexion avec le SI de l'ESP.\n\nSécurité : JWT (Bearer) pour les routes d'administration ; carte NFC + PIN pour les paiements ; signature HMAC pour le webhook ESP."
+  },
+  "servers": [
+    { "url": "https://smart-campus-jgn5.onrender.com/api", "description": "Production (Render)" },
+    { "url": "http://localhost:5000/api", "description": "Développement local" }
+  ],
+  "tags": [
+    { "name": "Accès", "description": "Contrôle d'accès multi-niveaux et occupation" },
+    { "name": "Scolarité (frais)", "description": "Paiement des frais de scolarité" },
+    { "name": "Présences", "description": "Pointage et statistiques de présence" },
+    { "name": "Cours", "description": "Gestion des cours et inscriptions" },
+    { "name": "Intégration ESP", "description": "Import/export et webhook du SI ESP" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" },
+      "hmacSignature": { "type": "apiKey", "in": "header", "name": "X-ESP-Signature", "description": "HMAC-SHA256(corps_brut, ESP_WEBHOOK_SECRET) en hexadécimal" },
+      "readerToken": { "type": "apiKey", "in": "header", "name": "X-Reader-Token", "description": "Jeton du lecteur de confiance d'un espace" }
+    },
+    "schemas": {
+      "AccessCheckMultiRequest": {
+        "type": "object",
+        "required": ["uid", "spaceKey"],
+        "properties": {
+          "uid": { "type": "string", "example": "a89fb4ef" },
+          "spaceKey": { "type": "string", "example": "labo-info-1" },
+          "direction": { "type": "string", "enum": ["in", "out"], "default": "in" },
+          "pin": { "type": "string", "description": "Requis si l'espace exige la vérification du PIN" }
+        }
+      },
+      "AccessCheckResponse": {
+        "type": "object",
+        "properties": {
+          "authorized": { "type": "boolean" },
+          "decision": { "type": "string", "enum": ["authorized", "denied"] },
+          "reason": { "type": "string" },
+          "message": { "type": "string" },
+          "direction": { "type": "string" },
+          "studentInfo": { "type": "object" },
+          "spaceInfo": { "type": "object" }
+        }
+      },
+      "ScholarshipPayRequest": {
+        "type": "object",
+        "required": ["uid", "pin"],
+        "properties": {
+          "uid": { "type": "string" },
+          "pin": { "type": "string" },
+          "academicYear": { "type": "string", "example": "2025-2026" },
+          "amount": { "type": "integer", "description": "Si omis : solde total restant dû" },
+          "installmentId": { "type": "string", "description": "Pour pay-installment uniquement" },
+          "idempotencyKey": { "type": "string" }
+        }
+      },
+      "AttendanceCheckRequest": {
+        "type": "object",
+        "required": ["uid", "spaceKey"],
+        "properties": {
+          "uid": { "type": "string" },
+          "spaceKey": { "type": "string" },
+          "readerId": { "type": "string" }
+        }
+      },
+      "ImportStudentsRequest": {
+        "type": "object",
+        "properties": {
+          "students": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "matricule": { "type": "string" },
+                "nom": { "type": "string" },
+                "prenom": { "type": "string" },
+                "email": { "type": "string" },
+                "departement": { "type": "string" },
+                "niveau": { "type": "string" },
+                "statut_scolarite": { "type": "string" }
+              }
+            }
+          },
+          "csv": { "type": "string", "description": "Alternative : contenu CSV brut" }
+        }
+      },
+      "WebhookRequest": {
+        "type": "object",
+        "required": ["event", "data"],
+        "properties": {
+          "event": { "type": "string", "enum": ["student.created", "student.updated"] },
+          "data": { "type": "object" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/access/check-multi": {
+      "post": {
+        "tags": ["Accès"],
+        "summary": "Contrôle d'accès multi-niveaux",
+        "description": "Vérifie carte, étudiant, département, niveau, horaire, PIN et capacité. Met à jour l'occupation et diffuse en WebSocket.",
+        "security": [{ "readerToken": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AccessCheckMultiRequest" } } } },
+        "responses": { "200": { "description": "Décision d'accès", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AccessCheckResponse" } } } } }
+      }
+    },
+    "/access/occupancy": {
+      "get": {
+        "tags": ["Accès"],
+        "summary": "Occupation temps réel de tous les espaces",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Liste des espaces avec taux d'occupation" } }
+      }
+    },
+    "/access/occupancy/{key}/reset": {
+      "post": {
+        "tags": ["Accès"],
+        "summary": "Réinitialiser l'occupation d'un espace",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "key", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Occupation remise à zéro" } }
+      }
+    },
+    "/scholarship/my-fees": {
+      "get": {
+        "tags": ["Scolarité (frais)"],
+        "summary": "L'étudiant consulte ses frais",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Dossiers de frais de l'étudiant" } }
+      }
+    },
+    "/scholarship/student/{id}": {
+      "get": {
+        "tags": ["Scolarité (frais)"],
+        "summary": "Consulter les frais d'un étudiant (admin/finance)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Dossiers de l'étudiant" } }
+      }
+    },
+    "/scholarship/pay": {
+      "post": {
+        "tags": ["Scolarité (frais)"],
+        "summary": "Payer les frais de scolarité (carte + PIN)",
+        "description": "Transaction atomique avec idempotence. Met à jour le dossier et le statut de scolarité. Analyse IA + email de reçu.",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ScholarshipPayRequest" } } } },
+        "responses": { "200": { "description": "Paiement effectué + reçu" }, "400": { "description": "Solde insuffisant / déjà soldé" } }
+      }
+    },
+    "/scholarship/pay-installment": {
+      "post": {
+        "tags": ["Scolarité (frais)"],
+        "summary": "Payer une tranche (carte + PIN)",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ScholarshipPayRequest" } } } },
+        "responses": { "200": { "description": "Tranche payée" } }
+      }
+    },
+    "/scholarship/receipt/{id}": {
+      "get": {
+        "tags": ["Scolarité (frais)"],
+        "summary": "Reçu imprimable (HTML)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "ID de la transaction" }],
+        "responses": { "200": { "description": "Page HTML du reçu" } }
+      }
+    },
+    "/scholarship/{id}/status": {
+      "patch": {
+        "tags": ["Scolarité (frais)"],
+        "summary": "Mettre à jour le statut d'un dossier (admin/finance)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "properties": { "status": { "type": "string", "enum": ["unpaid", "partial", "paid", "exempted"] } } } } } },
+        "responses": { "200": { "description": "Statut mis à jour" } }
+      }
+    },
+    "/scholarship/stats": {
+      "get": {
+        "tags": ["Scolarité (frais)"],
+        "summary": "Statistiques de collecte (admin/finance)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "academicYear", "in": "query", "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Synthèse de collecte" } }
+      }
+    },
+    "/scholarship/fees": {
+      "post": {
+        "tags": ["Scolarité (frais)"],
+        "summary": "Créer/mettre à jour un dossier de frais (admin/finance)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["studentId", "academicYear", "totalAmount"], "properties": { "studentId": { "type": "string" }, "academicYear": { "type": "string" }, "totalAmount": { "type": "integer" }, "installments": { "type": "array", "items": { "type": "object" } } } } } } },
+        "responses": { "201": { "description": "Dossier créé" } }
+      }
+    },
+    "/attendance/check-in": {
+      "post": {
+        "tags": ["Présences"],
+        "summary": "Pointage d'entrée par carte NFC",
+        "description": "Détecte le cours en séance dans la salle. present si ≤15 min de retard, late si 15-30 min, refusé au-delà.",
+        "security": [{ "readerToken": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AttendanceCheckRequest" } } } },
+        "responses": { "200": { "description": "Présence enregistrée" }, "403": { "description": "Retard excessif / non inscrit" } }
+      }
+    },
+    "/attendance/check-out": {
+      "post": {
+        "tags": ["Présences"],
+        "summary": "Pointage de sortie par carte NFC",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AttendanceCheckRequest" } } } },
+        "responses": { "200": { "description": "Sortie enregistrée" } }
+      }
+    },
+    "/attendance/my-attendance": {
+      "get": {
+        "tags": ["Présences"],
+        "summary": "L'étudiant consulte ses présences",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Historique de présence" } }
+      }
+    },
+    "/attendance/course/{courseId}": {
+      "get": {
+        "tags": ["Présences"],
+        "summary": "Liste de présence d'un cours (enseignant/admin)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "courseId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "date", "in": "query", "schema": { "type": "string", "format": "date" } }
+        ],
+        "responses": { "200": { "description": "Présents/absents du jour" } }
+      }
+    },
+    "/attendance/course/{courseId}/export": {
+      "get": {
+        "tags": ["Présences"],
+        "summary": "Export CSV de la liste de présence",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "courseId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Fichier CSV" } }
+      }
+    },
+    "/attendance/student/{studentId}/stats": {
+      "get": {
+        "tags": ["Présences"],
+        "summary": "Taux de présence d'un étudiant",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "studentId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Statistiques globales et par cours" } }
+      }
+    },
+    "/attendance/alerts": {
+      "get": {
+        "tags": ["Présences"],
+        "summary": "Étudiants sous le seuil de 75%",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "courseId", "in": "query", "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Liste des alertes" } }
+      }
+    },
+    "/courses": {
+      "get": {
+        "tags": ["Cours"],
+        "summary": "Lister les cours (admin/enseignant)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Liste des cours" } }
+      },
+      "post": {
+        "tags": ["Cours"],
+        "summary": "Créer un cours (admin)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["code", "name", "academicYear"], "properties": { "code": { "type": "string" }, "name": { "type": "string" }, "department": { "type": "string" }, "level": { "type": "string" }, "instructorId": { "type": "string" }, "academicYear": { "type": "string" }, "schedule": { "type": "array", "items": { "type": "object" } } } } } } },
+        "responses": { "201": { "description": "Cours créé" } }
+      }
+    },
+    "/courses/{id}/enroll": {
+      "post": {
+        "tags": ["Cours"],
+        "summary": "Inscrire des étudiants à un cours (admin)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "properties": { "studentIds": { "type": "array", "items": { "type": "string" } }, "matricules": { "type": "array", "items": { "type": "string" } } } } } } },
+        "responses": { "200": { "description": "Étudiants inscrits" } }
+      }
+    },
+    "/integration/esp/import-students": {
+      "post": {
+        "tags": ["Intégration ESP"],
+        "summary": "Importer des étudiants (CSV ou JSON)",
+        "description": "Crée User + Student pour chaque enregistrement. Le portefeuille est créé à l'attribution de la carte.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": {
+          "application/json": { "schema": { "$ref": "#/components/schemas/ImportStudentsRequest" } },
+          "text/csv": { "schema": { "type": "string" } }
+        } },
+        "responses": { "200": { "description": "Rapport d'import (créés, ignorés, erreurs)" } }
+      }
+    },
+    "/integration/esp/export-students": {
+      "get": {
+        "tags": ["Intégration ESP"],
+        "summary": "Exporter les étudiants (CSV, ?format=json)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "format", "in": "query", "schema": { "type": "string", "enum": ["csv", "json"] } }],
+        "responses": { "200": { "description": "Export CSV/JSON" } }
+      }
+    },
+    "/integration/esp/sync-status": {
+      "get": {
+        "tags": ["Intégration ESP"],
+        "summary": "État de synchronisation",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Étudiants non synchronisés" } }
+      }
+    },
+    "/integration/esp/webhook": {
+      "post": {
+        "tags": ["Intégration ESP"],
+        "summary": "Webhook entrant du SI ESP (HMAC)",
+        "description": "Authentifié par signature HMAC-SHA256 dans l'en-tête X-ESP-Signature.",
+        "security": [{ "hmacSignature": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookRequest" } } } },
+        "responses": { "200": { "description": "Traité" }, "401": { "description": "Signature invalide" } }
+      }
+    }
+  }
+}

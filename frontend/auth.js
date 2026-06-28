@@ -5,6 +5,8 @@ if (localStorage.getItem("token") && _stored) {
   const _role = _stored.role;
   if (_role === "student") window.location.href = "student.html";
   else if (_role === "service_scolarite") window.location.href = "scolarite.html";
+  else if (_role === "finance_agent") window.location.href = "finance.html";
+  else if (_role === "instructor") window.location.href = "enseignant.html";
   else if (_role === "payment_agent") window.location.href = "payment-agent.html";
   else window.location.href = "dashboard.html";
 }
@@ -88,6 +90,8 @@ otpForm.addEventListener("submit", async (e) => {
     const role = data.user.role;
     if (role === "student")           window.location.href = "student.html";
     else if (role === "service_scolarite") window.location.href = "scolarite.html";
+    else if (role === "finance_agent") window.location.href = "finance.html";
+    else if (role === "instructor") window.location.href = "enseignant.html";
     else if (role === "payment_agent") window.location.href = "payment-agent.html";
     else                              window.location.href = "dashboard.html";
   } catch {

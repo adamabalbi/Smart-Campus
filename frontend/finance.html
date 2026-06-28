@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scolarité — Agent financier — Smart Campus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="service-payment.css">
+  <style>
+    .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:1rem; margin:1rem 0; }
+    .stat { background:rgba(255,255,255,0.08); border-radius:12px; padding:1rem; text-align:center; }
+    .stat .num { font-family:'Fraunces',serif; font-size:1.7rem; font-weight:700; }
+    .stat .lbl { font-size:.82rem; opacity:.75; }
+    table { width:100%; border-collapse:collapse; font-size:.9rem; }
+    th,td { text-align:left; padding:.55rem; border-bottom:1px solid rgba(255,255,255,0.1); }
+    .fee-status { padding:.15rem .55rem; border-radius:6px; font-size:.8rem; }
+    .st-paid { background:rgba(95,141,78,0.3); } .st-partial { background:rgba(224,164,88,0.3); }
+    .st-unpaid { background:rgba(184,92,92,0.3); } .st-exempted { background:rgba(120,144,200,0.3); }
+    .tabs { display:flex; gap:.5rem; margin:1rem 0; flex-wrap:wrap; }
+    .tab { padding:.5rem 1rem; border-radius:8px; cursor:pointer; background:rgba(255,255,255,0.08); }
+    .tab.active { background:rgba(176,137,104,0.35); }
+    .panel { display:none; } .panel.active { display:block; }
+    .row2 { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; }
+    label.field-label { display:block; margin:.6rem 0 .2rem; font-size:.85rem; opacity:.85; }
+    .link { color:#D8C3AC; cursor:pointer; text-decoration:underline; }
+    #toast { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%); background:#2F6F4F; color:#fff; padding:.8rem 1.4rem; border-radius:8px; display:none; z-index:50; }
+  </style>
+</head>
+<body>
+  <div class="svc-container" style="max-width:1080px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+      <div>
+        <h1 class="svc-title"><i class="fa-solid fa-file-invoice-dollar"></i> Frais de scolarité</h1>
+        <p class="svc-subtitle">Espace agent financier</p>
+      </div>
+      <div>
+        <input id="yearInput" class="input" style="max-width:140px;" placeholder="2025-2026">
+        <button class="btn" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i></button>
+      </div>
+    </div>
+
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="list"><i class="fa-solid fa-list"></i> Dossiers</div>
+      <div class="tab" data-tab="pay"><i class="fa-solid fa-credit-card"></i> Encaisser</div>
+      <div class="tab" data-tab="create"><i class="fa-solid fa-plus"></i> Nouveau dossier</div>
+      <div class="tab" data-tab="report"><i class="fa-solid fa-chart-pie"></i> Rapport</div>
+    </div>
+
+    <!-- LISTE -->
+    <div class="panel active" id="panel-list">
+      <div class="svc-card">
+        <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:.8rem;">
+          <select id="filterStatus" class="input" style="max-width:220px;">
+            <option value="">Tous les statuts</option>
+            <option value="unpaid">Non payé</option>
+            <option value="partial">Paiement partiel</option>
+            <option value="paid">Soldé</option>
+            <option value="exempted">Exonéré</option>
+          </select>
+          <button class="btn btn-primary" id="refreshList"><i class="fa-solid fa-rotate"></i> Actualiser</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Étudiant</th><th>Filière/Niveau</th><th>Année</th><th>Total</th><th>Payé</th><th>Reste</th><th>Statut</th><th></th></tr></thead>
+            <tbody id="listBody"><tr><td colspan="8" style="opacity:.7;">—</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENCAISSER (par carte NFC + PIN) -->
+    <div class="panel" id="panel-pay">
+      <div class="svc-card">
+        <p class="svc-subtitle">Encaissement par carte NFC de l'étudiant (carte + PIN obligatoires).</p>
+        <div class="row2">
+          <div><label class="field-label">UID de la carte</label><input id="payUid" class="input" placeholder="ex: a89fb4ef"></div>
+          <div><label class="field-label">Code PIN</label><input id="payPin" type="password" class="input" maxlength="6" placeholder="••••"></div>
+        </div>
+        <div class="row2">
+          <div><label class="field-label">Année académique</label><input id="payYear" class="input" placeholder="2025-2026"></div>
+          <div><label class="field-label">Montant (laisser vide = solde total dû)</label><input id="payAmount" type="number" class="input" placeholder="ex: 50000"></div>
+        </div>
+        <button class="btn btn-primary" id="payBtn" style="margin-top:1rem;"><i class="fa-solid fa-check"></i> Encaisser le paiement</button>
+        <div id="payResult" style="margin-top:1rem;"></div>
+      </div>
+    </div>
+
+    <!-- NOUVEAU DOSSIER -->
+    <div class="panel" id="panel-create">
+      <div class="svc-card">
+        <p class="svc-subtitle">Créer ou mettre à jour le dossier de frais d'un étudiant.</p>
+        <label class="field-label">ID étudiant (MongoID)</label>
+        <input id="cStudentId" class="input" placeholder="ObjectId de l'étudiant">
+        <div class="row2">
+          <div><label class="field-label">Année académique</label><input id="cYear" class="input" placeholder="2025-2026"></div>
+          <div><label class="field-label">Montant total (XOF)</label><input id="cTotal" type="number" class="input" placeholder="ex: 150000"></div>
+        </div>
+        <button class="btn btn-primary" id="createBtn" style="margin-top:1rem;"><i class="fa-solid fa-floppy-disk"></i> Enregistrer le dossier</button>
+        <div id="createResult" style="margin-top:1rem;"></div>
+        <p class="note" style="font-size:.8rem; opacity:.7; margin-top:.8rem;">
+          Astuce : l'ID étudiant est visible dans le détail d'un dossier existant ou via l'espace scolarité.
+        </p>
+      </div>
+    </div>
+
+    <!-- RAPPORT -->
+    <div class="panel" id="panel-report">
+      <div class="svc-card" id="reportBox"><p style="opacity:.7;">Chargement du rapport…</p></div>
+    </div>
+  </div>
+
+  <!-- Détail dossier -->
+  <div id="detailModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:40; align-items:center; justify-content:center;">
+    <div class="svc-card" style="max-width:560px; width:90%; max-height:85vh; overflow:auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="margin:0;">Détail du dossier</h2>
+        <span class="link" id="closeDetail">Fermer ✕</span>
+      </div>
+      <div id="detailBody"></div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="config.js"></script>
+  <script src="finance.js"></script>
+</body>
+</html>

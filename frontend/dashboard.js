@@ -50,8 +50,8 @@ document.getElementById("sbRole").textContent  = me.role;
 
 // ---- Rôles disponibles selon le compte connecté ----
 const rolesCreables = me.role === "super_admin"
-  ? ["admin", "security_agent", "payment_agent", "librarian", "service_scolarite", "charge_cantine", "charge_imprimerie"]
-  : ["security_agent", "payment_agent", "librarian", "service_scolarite", "charge_cantine", "charge_imprimerie"];
+  ? ["admin", "security_agent", "payment_agent", "librarian", "service_scolarite", "finance_agent", "instructor", "charge_cantine", "charge_imprimerie"]
+  : ["security_agent", "payment_agent", "librarian", "service_scolarite", "finance_agent", "instructor", "charge_cantine", "charge_imprimerie"];
 
 const rolesLabels = {
   super_admin:       "Super-admin",
@@ -60,6 +60,8 @@ const rolesLabels = {
   payment_agent:     "Agent paiement",
   librarian:         "Bibliothécaire",
   service_scolarite: "Service scolarité",
+  finance_agent:     "Agent financier",
+  instructor:        "Enseignant",
   charge_cantine:    "Chargé de cantine",
   charge_imprimerie: "Chargé d'imprimerie",
   student:           "Étudiant",
@@ -972,8 +974,8 @@ document.getElementById("detailsModalClose").addEventListener("click", () => {
 let roleModalUserId = null;
 
 const rolesModifiables = me.role === "super_admin"
-  ? ["admin", "security_agent", "payment_agent", "librarian", "charge_cantine", "charge_imprimerie"]
-  : ["security_agent", "payment_agent", "librarian", "charge_cantine", "charge_imprimerie"];
+  ? ["admin", "security_agent", "payment_agent", "librarian", "service_scolarite", "finance_agent", "instructor", "charge_cantine", "charge_imprimerie"]
+  : ["security_agent", "payment_agent", "librarian", "service_scolarite", "finance_agent", "instructor", "charge_cantine", "charge_imprimerie"];
 
 function openRoleModal(userId, currentRole) {
   roleModalUserId = userId;

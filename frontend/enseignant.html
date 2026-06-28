@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Présences — Enseignant — Smart Campus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="service-payment.css">
+  <style>
+    table { width:100%; border-collapse:collapse; font-size:.9rem; }
+    th,td { text-align:left; padding:.55rem; border-bottom:1px solid rgba(255,255,255,0.1); }
+    .tag { padding:.15rem .55rem; border-radius:6px; font-size:.8rem; }
+    .t-present { background:rgba(95,141,78,0.3); } .t-late { background:rgba(224,164,88,0.3); }
+    .t-absent { background:rgba(184,92,92,0.3); } .t-excused { background:rgba(120,144,200,0.3); }
+    .tabs { display:flex; gap:.5rem; margin:1rem 0; flex-wrap:wrap; }
+    .tab { padding:.5rem 1rem; border-radius:8px; cursor:pointer; background:rgba(255,255,255,0.08); }
+    .tab.active { background:rgba(176,137,104,0.35); }
+    .panel { display:none; } .panel.active { display:block; }
+    .stat-row { display:flex; gap:1rem; flex-wrap:wrap; margin:.6rem 0; }
+    .stat { background:rgba(255,255,255,0.08); border-radius:10px; padding:.8rem 1.2rem; }
+    .stat .num { font-family:'Fraunces',serif; font-size:1.5rem; font-weight:700; }
+    .ws-status { display:inline-flex; align-items:center; gap:.4rem; font-size:.82rem; opacity:.85; }
+    .dot { width:9px; height:9px; border-radius:50%; background:#8FBE7A; } .dot.off { background:#B85C5C; }
+  </style>
+</head>
+<body>
+  <div class="svc-container" style="max-width:980px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+      <div>
+        <h1 class="svc-title"><i class="fa-solid fa-chalkboard-user"></i> Gestion des présences</h1>
+        <p class="svc-subtitle">Espace enseignant</p>
+      </div>
+      <div style="text-align:right;">
+        <span class="ws-status"><span class="dot off" id="wsDot"></span><span id="wsText">…</span></span><br>
+        <button class="btn" id="logoutBtn" style="margin-top:.4rem;"><i class="fa-solid fa-right-from-bracket"></i></button>
+      </div>
+    </div>
+
+    <div class="svc-card">
+      <label class="field-label">Cours</label>
+      <select id="courseSelect" class="input"></select>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="live"><i class="fa-solid fa-satellite-dish"></i> Présence du jour</div>
+      <div class="tab" data-tab="alerts"><i class="fa-solid fa-triangle-exclamation"></i> Alertes &lt; 75%</div>
+    </div>
+
+    <!-- PRÉSENCE DU JOUR -->
+    <div class="panel active" id="panel-live">
+      <div class="svc-card">
+        <div class="stat-row" id="liveStats"></div>
+        <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:.6rem;">
+          <input type="date" id="dateInput" class="input" style="max-width:180px;">
+          <button class="btn btn-primary" id="refreshLive"><i class="fa-solid fa-rotate"></i> Actualiser</button>
+          <button class="btn" id="exportBtn"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Matricule</th><th>Étudiant</th><th>Statut</th><th>Arrivée</th></tr></thead>
+            <tbody id="liveBody"><tr><td colspan="4" style="opacity:.7;">Sélectionnez un cours.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERTES -->
+    <div class="panel" id="panel-alerts">
+      <div class="svc-card">
+        <p class="svc-subtitle">Étudiants sous le seuil de présence de 75% pour ce cours.</p>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Matricule</th><th>Étudiant</th><th>Séances</th><th>Présences</th><th>Taux</th></tr></thead>
+            <tbody id="alertsBody"><tr><td colspan="5" style="opacity:.7;">—</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="enseignant.js"></script>
+</body>
+</html>

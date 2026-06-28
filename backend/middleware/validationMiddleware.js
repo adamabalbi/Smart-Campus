@@ -106,7 +106,7 @@ const validateUserCreation = [
     .trim()
     .isLength({ max: 100 }),
   body('role')
-    .isIn(['admin', 'security_agent', 'payment_agent', 'librarian', 'service_scolarite', 'charge_cantine', 'charge_imprimerie'])
+    .isIn(['admin', 'security_agent', 'payment_agent', 'librarian', 'service_scolarite', 'finance_agent', 'instructor', 'charge_cantine', 'charge_imprimerie'])
     .withMessage('Rôle invalide'),
   handleValidationErrors
 ];

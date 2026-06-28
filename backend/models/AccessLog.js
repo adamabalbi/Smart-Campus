@@ -34,6 +34,12 @@ const accessLogSchema = new mongoose.Schema(
       enum: ["authorized", "denied"],
       required: true,
     },
+    // Sens du passage (contrôle multi-niveaux) : entrée ou sortie.
+    direction: {
+      type: String,
+      enum: ["in", "out"],
+      default: "in",
+    },
     reason: {
       type: String,
       enum: [
@@ -45,6 +51,13 @@ const accessLogSchema = new mongoose.Schema(
         "space_inactive",
         "access_not_allowed",
         "outside_allowed_time",
+        // --- contrôle multi-niveaux ---
+        "department_not_allowed",
+        "level_not_allowed",
+        "capacity_exceeded",
+        "pin_required",
+        "pin_invalid",
+        "scolarite_not_ok",
       ],
       required: true,
     },

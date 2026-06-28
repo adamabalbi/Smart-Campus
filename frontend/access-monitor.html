@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supervision des accès — Smart Campus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="service-payment.css">
+  <style>
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1rem; }
+    .space-card { background:rgba(255,255,255,0.08); border-radius:14px; padding:1.2rem; border-left:5px solid #5F8D4E; }
+    .space-card.warn { border-left-color:#E0A458; }
+    .space-card.full { border-left-color:#B85C5C; }
+    .space-card h3 { margin:0 0 .3rem; font-size:1.1rem; }
+    .space-type { font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em; }
+    .occ-num { font-family:'Fraunces',serif; font-size:2rem; font-weight:700; margin:.4rem 0; }
+    .bar { height:8px; background:rgba(255,255,255,0.15); border-radius:4px; overflow:hidden; margin:.5rem 0; }
+    .bar > span { display:block; height:100%; background:#5F8D4E; transition:width .4s; }
+    .bar.warn > span { background:#E0A458; } .bar.full > span { background:#B85C5C; }
+    .reset-link { font-size:.8rem; color:#D8C3AC; cursor:pointer; text-decoration:underline; }
+    .alerts-box { background:rgba(184,92,92,0.18); border:1px solid #B85C5C; border-radius:12px; padding:1rem; margin:1rem 0; }
+    .ws-status { display:inline-flex; align-items:center; gap:.4rem; font-size:.85rem; opacity:.85; }
+    .dot { width:10px; height:10px; border-radius:50%; background:#8FBE7A; }
+    .dot.off { background:#B85C5C; }
+    table { width:100%; border-collapse:collapse; font-size:.9rem; }
+    th,td { text-align:left; padding:.5rem; border-bottom:1px solid rgba(255,255,255,0.1); }
+    .tag { padding:.15rem .5rem; border-radius:6px; font-size:.8rem; }
+    .tag.ok { background:rgba(95,141,78,0.3); } .tag.ko { background:rgba(184,92,92,0.3); }
+  </style>
+</head>
+<body>
+  <div class="svc-container" style="max-width:1100px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem;">
+      <div>
+        <h1 class="svc-title"><i class="fa-solid fa-shield-halved"></i> Supervision des accès</h1>
+        <p class="svc-subtitle">Occupation des espaces en temps réel</p>
+      </div>
+      <div style="text-align:right;">
+        <span class="ws-status"><span class="dot off" id="wsDot"></span><span id="wsText">Connexion…</span></span><br>
+        <button class="btn" id="logoutBtn" style="margin-top:.5rem;"><i class="fa-solid fa-right-from-bracket"></i> Déconnexion</button>
+      </div>
+    </div>
+
+    <div id="alertsBox" class="alerts-box" style="display:none;"></div>
+
+    <h2 style="margin-top:1.5rem;"><i class="fa-solid fa-people-roof"></i> Occupation des espaces</h2>
+    <div class="grid" id="spacesGrid"><p style="opacity:.7;">Chargement…</p></div>
+
+    <h2 style="margin-top:2rem;"><i class="fa-solid fa-clock-rotate-left"></i> Historique des accès</h2>
+    <div class="svc-card">
+      <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:.8rem;">
+        <select id="filterSpace" class="input" style="max-width:220px;"><option value="">Tous les espaces</option></select>
+        <select id="filterDecision" class="input" style="max-width:180px;">
+          <option value="">Toutes décisions</option>
+          <option value="authorized">Autorisés</option>
+          <option value="denied">Refusés</option>
+        </select>
+        <button class="btn btn-primary" id="refreshLogs"><i class="fa-solid fa-rotate"></i> Actualiser</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>Heure</th><th>Étudiant</th><th>Espace</th><th>Sens</th><th>Décision</th><th>Motif</th></tr></thead>
+          <tbody id="logsBody"><tr><td colspan="6" style="opacity:.7;">—</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="access-monitor.js"></script>
+</body>
+</html>

@@ -34,6 +34,8 @@ const userSchema = new mongoose.Schema(
         "librarian",
         "service_manager",
         "service_scolarite",
+        "instructor",     // enseignant — gestion des présences
+        "finance_agent",  // agent financier — frais de scolarité
       ],
       default: "student",
     },

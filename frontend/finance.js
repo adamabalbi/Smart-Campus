@@ -217,6 +217,38 @@ async function loadReport() {
     <button class="btn" style="margin-top:1rem;" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimer le rapport</button>`;
 }
 
+// --- Changement de mot de passe ---
+const pwdModal = document.getElementById("pwdModal");
+document.getElementById("pwdBtn").onclick = () => {
+  document.getElementById("oldPwd").value = "";
+  document.getElementById("newPwd").value = "";
+  document.getElementById("confirmPwd").value = "";
+  document.getElementById("pwdMsg").innerHTML = "";
+  pwdModal.style.display = "flex";
+};
+document.getElementById("pwdClose").onclick = () => { pwdModal.style.display = "none"; };
+document.getElementById("pwdSubmit").onclick = async () => {
+  const oldPassword = document.getElementById("oldPwd").value;
+  const newPassword = document.getElementById("newPwd").value;
+  const confirm = document.getElementById("confirmPwd").value;
+  const msg = document.getElementById("pwdMsg");
+  if (!oldPassword || !newPassword) { msg.innerHTML = '<p style="color:#EAD3D0;">Tous les champs sont requis.</p>'; return; }
+  if (newPassword !== confirm) { msg.innerHTML = '<p style="color:#EAD3D0;">Les deux nouveaux mots de passe ne correspondent pas.</p>'; return; }
+  // fetch direct : un mot de passe actuel erroné renvoie 401, qui ne doit PAS déconnecter.
+  const res = await fetch(API + "/auth/change-password", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ oldPassword, newPassword }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    msg.innerHTML = '<p style="color:#8FBE7A;"><i class="fa-solid fa-circle-check"></i> Mot de passe modifié avec succès.</p>';
+    setTimeout(() => { pwdModal.style.display = "none"; }, 1500);
+  } else {
+    msg.innerHTML = `<p style="color:#EAD3D0;">${esc(data.message || "Échec de la modification.")}</p>`;
+  }
+};
+
 document.getElementById("logoutBtn").onclick = () => { localStorage.clear(); window.location.href = "index.html"; };
 document.getElementById("refreshList").onclick = loadList;
 document.getElementById("filterStatus").onchange = loadList;

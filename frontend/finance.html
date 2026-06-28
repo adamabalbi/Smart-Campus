@@ -38,6 +38,7 @@
       </div>
       <div>
         <input id="yearInput" class="input" style="max-width:140px;" placeholder="2025-2026">
+        <button class="btn" id="pwdBtn"><i class="fa-solid fa-key"></i> Mot de passe</button>
         <button class="btn" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i></button>
       </div>
     </div>
@@ -122,6 +123,25 @@
         <span class="link" id="closeDetail">Fermer ✕</span>
       </div>
       <div id="detailBody"></div>
+    </div>
+  </div>
+
+  <!-- Modale changement de mot de passe -->
+  <div id="pwdModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:50; align-items:center; justify-content:center;">
+    <div class="svc-card" style="max-width:420px; width:90%;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="margin:0;"><i class="fa-solid fa-key"></i> Changer mon mot de passe</h2>
+        <span class="link" id="pwdClose">Fermer ✕</span>
+      </div>
+      <label class="field-label">Mot de passe actuel</label>
+      <input type="password" id="oldPwd" class="input" autocomplete="current-password">
+      <label class="field-label">Nouveau mot de passe</label>
+      <input type="password" id="newPwd" class="input" autocomplete="new-password">
+      <label class="field-label">Confirmer le nouveau mot de passe</label>
+      <input type="password" id="confirmPwd" class="input" autocomplete="new-password">
+      <p style="font-size:.8rem; opacity:.7; margin:.6rem 0;">Au moins 8 caractères, avec une majuscule, une minuscule, un chiffre et un caractère spécial.</p>
+      <button class="btn btn-primary" id="pwdSubmit" style="width:100%;"><i class="fa-solid fa-check"></i> Valider</button>
+      <div id="pwdMsg" style="margin-top:.8rem;"></div>
     </div>
   </div>
 

@@ -275,8 +275,8 @@ const createUserByAdmin = async (req, res) => {
     const requesterRole = req.user.role;
 
     const allowedRolesByRequester = {
-      super_admin: ["admin", "security_agent", "payment_agent", "librarian", "service_scolarite", "charge_cantine", "charge_imprimerie"],
-      admin:       ["security_agent", "payment_agent", "librarian", "service_scolarite", "charge_cantine", "charge_imprimerie"],
+      super_admin: ["admin", "security_agent", "payment_agent", "librarian", "service_scolarite", "finance_agent", "instructor", "charge_cantine", "charge_imprimerie"],
+      admin:       ["security_agent", "payment_agent", "librarian", "service_scolarite", "finance_agent", "instructor", "charge_cantine", "charge_imprimerie"],
     };
 
     const allowedRoles = allowedRolesByRequester[requesterRole] || [];

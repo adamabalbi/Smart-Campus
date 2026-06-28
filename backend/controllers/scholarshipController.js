@@ -415,7 +415,10 @@ const getReceipt = async (req, res) => {
     }
 
     const s = tx.studentId;
-    const f = (n) => Number(n || 0).toLocaleString("fr-FR") + " XOF";
+    // Helvetica (pdfkit) ne gère pas l'espace insécable fine (U+202F/U+00A0) que
+    // toLocaleString("fr-FR") insère entre les milliers : on la remplace par une
+    // espace normale pour éviter un rendu "5 /000".
+    const f = (n) => Number(n || 0).toLocaleString("fr-FR").replace(/[\u202f\u00a0\s]+/g, " ").trim() + " XOF";
     const receiptNumber = tx.metadata.receiptNumber || tx._id.toString();
 
     const PDFDocument = require("pdfkit");
@@ -431,7 +434,7 @@ const getReceipt = async (req, res) => {
     const DARK = "#1F2933";
 
     // En-tête
-    doc.fillColor(GREEN).fontSize(22).font("Helvetica-Bold").text("Smart Campus — ESP", { align: "center" });
+    doc.fillColor(GREEN).fontSize(22).font("Helvetica-Bold").text("Smart Campus - ESP", { align: "center" });
     doc.moveDown(0.2);
     doc.fillColor(GREY).fontSize(11).font("Helvetica").text("Reçu de paiement des frais de scolarité", { align: "center" });
     doc.moveDown(0.4);

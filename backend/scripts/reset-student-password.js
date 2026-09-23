@@ -9,6 +9,7 @@ const targetEmails = [
   'smartcampus.demos+jean@gmail.com',
   'smartcampus.demos+marie@gmail.com',
   'smartcampus.demos+testadmin@gmail.com',
+  'adalobalbina@gmail.com',
 ];
 
 async function run() {
@@ -38,7 +39,7 @@ async function run() {
     }
 
     console.log('🎯 CONNEXION:');
-    console.log('   Mot de passe pour les 3 comptes: Campus2024!');
+    console.log('   Mot de passe pour les comptes listés: Campus2024!');
     console.log('   (À changer à la première connexion)');
 
   } catch (error) {

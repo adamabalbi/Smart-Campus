@@ -1,7 +1,15 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
-require('dotenv').config();
+const path = require('path');
+const dotenv = require('dotenv');
+
+// Charger .env depuis le répertoire backend si la variable n'est pas trouvée
+dotenv.config();
+if (!process.env.MONGO_URI) {
+  const envPath = path.join(__dirname, '..', '.env');
+  dotenv.config({ path: envPath });
+}
 
 const NEW_PASSWORD = 'Campus2024!';
 
